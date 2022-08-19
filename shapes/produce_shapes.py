@@ -849,6 +849,9 @@ def main(args):
             "ttl",
             "vvl",
             "w",
+            "zj",
+            "ttj",
+            "vvj",
         }
     logger.info(f"Processes to be computed: {procS}")
     dataS = {"data"} & procS

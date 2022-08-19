@@ -69,6 +69,20 @@ elif [[ "$SUBMIT_MODE" == "singlegraph" ]]; then
             --only-create-graphs \
             --graph-dir $OUTPUT \
             $CONTROL_ARG
+    elif [[ "$SPECIAL" == "EleES" ]]; then
+        PROCESSES="data,emb,zl,zj,ttl,ttj,vvl,vvj,w"
+        PROCESSES=$(sort_string ${PROCESSES#,})
+        python shapes/produce_shapes.py --channels $CHANNEL \
+            --output-file dummy.root \
+            --directory $NTUPLES \
+            --$CHANNEL-friend-directory $FRIENDS \
+            --era $ERA \
+            --optimization-level 1 \
+            --special-analysis "EleES" \
+            --process-selection $PROCESSES \
+            --only-create-graphs \
+            --graph-dir $OUTPUT \
+            $CONTROL_ARG
     else
         python shapes/produce_shapes.py --channels $CHANNEL \
             --output-file dummy.root \
