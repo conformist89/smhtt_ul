@@ -63,6 +63,9 @@ from config.shapes.tauid_measurement_binning import (
 from config.shapes.taues_measurement_binning import (
     categorization as taues_categorization,
 )
+from config.shapes.elees_measurement_binning import (
+    categorization as elees_categorization,
+)
 
 # Variations for estimation of fake processes
 from config.shapes.variations import (
@@ -298,7 +301,7 @@ def parse_arguments():
     parser.add_argument(
         "--special-analysis",
         help="Can be set to a special analysis name to only run that analysis.",
-        choices=["TauID", "TauES"],
+        choices=["TauID", "TauES", "EleES"],
         default=None,
     )
     return parser.parse_args()
@@ -719,6 +722,8 @@ def prepare_special_analysis(special):
         return tauid_categorization
     elif special and special == "TauES":
         return taues_categorization
+    elif special and special == "EleES":
+        return elees_categorization
     else:
         raise ValueError("Unknown special analysis: {}".format(special))
 
@@ -783,6 +788,24 @@ def main(args):
                 categorization,
                 additional_emb_procS,
             )
+        if special_analysis == "EleES":
+            additional_emb_procS = set()
+            eleESvariations = [-2.5 + 0.1 * i for i in range(0, 51)]
+            add_tauES_datasets(
+                era,
+                channel,
+                friend_directories,
+                files,
+                args.directory,
+                nominals,
+                eleESvariations,
+                [
+                    channel_selection(channel, era, special_analysis),
+                    ZTT_embedded_process_selection(channel, era),
+                ],
+                categorization,
+                additional_emb_procS,
+            )
 
     if args.process_selection is None:
         procS = {
@@ -812,6 +835,14 @@ def main(args):
     else:
         procS = args.process_selection
     if args.channels == ["mm"]:
+        procS = {
+            "data",
+            "zl",
+            "ttl",
+            "vvl",
+            "w",
+        }
+    if args.channels == ["ee"]:
         procS = {
             "data",
             "zl",
@@ -863,6 +894,15 @@ def main(args):
                 additional_emb_procS,
                 nominals[era]["units"][channel],
                 [same_sign, anti_iso_lt],
+                do_check,
+            )
+        elif channel == "ee" and special_analysis == "EleES":
+            logger.info("Booking EleES")
+            book_tauES_histograms(
+                um,
+                additional_emb_procS,
+                nominals[era]["units"][channel],
+                [same_sign],
                 do_check,
             )
         else:
@@ -927,7 +967,15 @@ def main(args):
                 variations=[same_sign_em],
                 enable_check=do_check,
             )
-        elif channel == "mm" and special_analysis == "TauES":
+        elif channel == "mm" and special_analysis == "TauID":
+            book_histograms(
+                um,
+                processes={"data", "zl", "w", "ttl"},
+                datasets=nominals[era]["units"][channel],
+                variations=[],
+                enable_check=do_check,
+            )
+        elif channel == "ee" and special_analysis == "EleES":
             book_histograms(
                 um,
                 processes={"data", "zl", "w", "ttl"},

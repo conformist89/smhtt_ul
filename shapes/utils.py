@@ -101,8 +101,11 @@ def book_histograms(manager, processes, datasets, variations=None, enable_check=
     )
 
 
-def filter_friends(dataset, friend):
-    # Add fake factor friends only for backgrounds.
+def filter_friends(dataset, friend, channel):
+    # in ee channel we only need xsec friends
+    if channel == "ee" and not "xsec" in friend:
+        return False
+        # Add fake factor friends only for backgrounds.
     if re.match("(gg|qq|susybb|susygg|tt|w|z|v)h", dataset.lower()):
         if "FakeFactors" in friend or "EMQCDWeights" in friend:
             return False
@@ -132,7 +135,7 @@ def get_nominal_datasets(era, channel, friend_directories, files, directory):
             channel,
             channel + "_nominal",
             directory,
-            [fdir for fdir in friend_directories[channel] if filter_friends(key, fdir)],
+            [fdir for fdir in friend_directories[channel] if filter_friends(key, fdir, channel)],
             validate_samples=False,
         )
     return datasets

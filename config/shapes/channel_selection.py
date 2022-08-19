@@ -182,5 +182,23 @@ def channel_selection(channel, era, special=None):
         else:
             raise ValueError("Given era does not exist")
         return Selection(name="mt", cuts=cuts)
+    elif special == "eleES":
+        if channel != "ee":
+            raise ValueError("EleES measurement is done in the ee channel only")
+        cuts.extend(
+            [
+                ("iso_1<0.15 && iso_2<0.15", "muon_iso"),
+            ]
+        )
+        if era == "2018":
+            cuts.append(
+                (
+                    "pt_2>33 && pt_1>=20 && ((trg_single_ele32 == 1) || (trg_single_ele35 == 1))",
+                    "trg_selection",
+                ),
+            )
+        else:
+            raise ValueError("Given era does not exist")
+        return Selection(name="ee", cuts=cuts)
     else:
         raise ValueError("Given special selection does not exist")
