@@ -104,6 +104,27 @@ if [[ $MODE == "CONTROL" ]]; then
         --special-analysis "EleES" \
         --control-plot-set ${VARIABLES} \
         --output-file $shapes_output
+    bash ./shapes/do_estimations.sh 2018 ${shapes_rootfile} 1
+    for CATEGORY in "${categories[@]}"; do
+        python3 plotting/plot_shapes_control_ee_channel.py -l --era Run${ERA} --input ${shapes_rootfile} --variables ${VARIABLES} --channels ${CHANNEL} --embedding --category $CATEGORY
+    done
+fi
+
+
+if [[ $MODE == "CONTROL-SHAPES" ]]; then
+    VARIABLES="pt_1,pt_2,eta_1,eta_2,m_vis,jpt_1,jpt_2,jeta_1,jeta_2,mjj,njets,nbtag,bpt_1,bpt_2,mt_1,mt_2,pt_tt,pt_tt_pf,iso_1,pfmet,mt_1_pf,mt_2_pf,met,pzetamissvis,pzetamissvis_pf,metphi,pfmetphi"
+    source utils/setup_root.sh
+    python shapes/produce_shapes.py --channels $CHANNEL \
+        --directory $NTUPLES \
+        --${CHANNEL}-friend-directory $XSEC_FRIENDS $FF_FRIENDS \
+        --era $ERA --num-processes 4 --num-threads 2 \
+        --optimization-level 1 --control-plots \
+        --special-analysis "EleES" \
+        --control-plot-set ${VARIABLES} --skip-systematic-variations \
+        --output-file $shapes_output
+    bash ./shapes/do_estimations.sh 2018 ${shapes_rootfile} 1
+
+    python3 plotting/plot_shapes_control_ee_channel.py -l --era Run${ERA} --input ${shapes_rootfile} --variables ${VARIABLES} --channels ${CHANNEL} --embedding
 fi
 
 if [[ $MODE == "LOCAL" ]]; then
@@ -114,7 +135,7 @@ if [[ $MODE == "LOCAL" ]]; then
         --era $ERA --num-processes 4 --num-threads 4 \
         --optimization-level 1 \
         --special-analysis "EleES" \
-        --control-plot-set ${VARIABLES} \
+        --control-plot-set ${VARIABLES} --skip-systematic-variations \
         --output-file $shapes_output
 fi
 
@@ -130,21 +151,6 @@ if [[ $MODE == "MERGE" ]]; then
     source utils/setup_root.sh
     echo "[INFO] Merging outputs located in ${CONDOR_OUTPUT}"
     hadd -j 5 -n 600 -f $shapes_rootfile ${CONDOR_OUTPUT}/../analysis_unit_graphs-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}/*.root
-fi
-
-if [[ $MODE == "PLOT-CONTROL" ]]; then
-    source utils/setup_root.sh
-    echo "##############################################################################################"
-    echo "#     plotting                                      #"
-    echo "##############################################################################################"
-    bash ./shapes/do_estimations.sh 2018 ${shapes_rootfile} 1
-    for CATEGORY in "${categories[@]}"; do
-        python3 plotting/plot_shapes_control.py -l --era Run${ERA} --input ${shapes_rootfile} --variables ${VARIABLES} --channels ${CHANNEL} --embedding --fake-factor --category $CATEGORY
-        python3 plotting/plot_shapes_control.py -l --era Run${ERA} --input ${shapes_rootfile} --variables ${VARIABLES} --channels ${CHANNEL} --embedding --category $CATEGORY
-        python3 plotting/plot_shapes_control.py -l --era Run${ERA} --input ${shapes_rootfile} --variables ${VARIABLES} --channels ${CHANNEL} --fake-factor --category $CATEGORY
-        python3 plotting/plot_shapes_control.py -l --era Run${ERA} --input ${shapes_rootfile} --variables ${VARIABLES} --channels ${CHANNEL}  --category $CATEGORY
-    done
-
 fi
 
 if [[ $MODE == "SYNC" ]]; then
@@ -170,7 +176,7 @@ if [[ $MODE == "SYNC" ]]; then
         -i ${shapes_rootfile} \
         -o ${shapes_output_synced} \
         --variable-selection ${VARIABLES} \
-        --special "EleES" \
+        --special "TauES" \
         -n 1
     POSTFIX="-ML"
     inputfile="htt_${CHANNEL}.inputs-sm-Run${ERA}${POSTFIX}.root"
@@ -186,11 +192,11 @@ if [[ $MODE == "DATACARD" ]]; then
     POSTFIX="-ML"
     TAG=
     inputfile="htt_${CHANNEL}.inputs-sm-Run${ERA}${POSTFIX}.root"
-    $CMSSW_BASE/bin/slc7_amd64_gcc700/MorphingTauES_UL \
+    $CMSSW_BASE/bin/slc7_amd64_gcc700/MorphingEleES_UL \
         --base_path=$PWD \
-        --input_folder_mt=$shapes_output_synced \
+        --input_folder_ee=$shapes_output_synced \
         --real_data=true \
-        --classic_bbb=true \
+        --classic_bbb=false \
         --verbose=true \
         --postfix=$POSTFIX \
         --auto_rebin=false \
@@ -199,13 +205,13 @@ if [[ $MODE == "DATACARD" ]]; then
         --output="output/$datacard_output"
 
     # done
-    combineTool.py -M T2W -i output/$datacard_output/htt_mt_*/ -o workspace.root --parallel 4 --X-no-check-norm
+    combineTool.py -M T2W -i output/$datacard_output/htt_ee_*/ -o workspace.root --parallel 4
     exit 0
 fi
 
 if [[ $MODE == "FIT" ]]; then
     source utils/setup_cmssw.sh
-    for INPUT in output/$datacard_output/htt_mt_*; do
+    for INPUT in output/$datacard_output/htt_ee_*; do
         echo "[INFO] Fit workspace from path ${INPUT}"
         WORKSPACE=${INPUT}/workspace.root
         combine \
@@ -249,7 +255,7 @@ fi
 
 if [[ $MODE == "POSTFIT" ]]; then
     source utils/setup_cmssw.sh
-    for INPUT in output/$datacard_output/htt_mt_*; do
+    for INPUT in output/$datacard_output/htt_ee_*; do
         python fitting/plot1DScan.py \
             --main ${INPUT}/higgsCombine${ERA}_elees.MultiDimFit.mH120.root \
             --POI elees \
@@ -263,7 +269,7 @@ fi
 
 if [[ $MODE == "PLOT-POSTFIT" ]]; then
     source utils/setup_cmssw.sh
-    for RESDIR in output/$datacard_output/htt_mt_*; do
+    for RESDIR in output/$datacard_output/htt_ee_*; do
         WORKSPACE=${RESDIR}/workspace.root
         echo "[INFO] Printing fit result for category $(basename $RESDIR)"
         FILE=${RESDIR}/postfitshape.root
@@ -287,7 +293,7 @@ if [[ $MODE == "PLOT-POSTFIT" ]]; then
     done
     source utils/setup_root.sh
     i=1
-    for RESDIR in output/$datacard_output/htt_mt_*; do
+    for RESDIR in output/$datacard_output/htt_ee_*; do
         WORKSPACE=${RESDIR}/workspace.root
 
         CATEGORY=$(basename $RESDIR)
