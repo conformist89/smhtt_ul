@@ -238,6 +238,13 @@ def parse_arguments():
         help="Directories arranged as Artus output and containing a friend tree for mm.",
     )
     parser.add_argument(
+        "--ee-friend-directory",
+        type=str,
+        default=[],
+        nargs="+",
+        help="Directories arranged as Artus output and containing a friend tree for ee.",
+    )
+    parser.add_argument(
         "--optimization-level",
         default=2,
         type=int,
@@ -445,50 +452,50 @@ def get_analysis_units(
             categorization=categorization,
             channel=channel,
         )
-        add_process(
-            analysis_units,
-            name="ggh",
-            dataset=datasets["ggH"],
-            selections=[
-                channel_selection(channel, era, special_analysis),
-                ggH125_process_selection(channel, era),
-            ],
-            categorization=categorization,
-            channel=channel,
-        )
-        add_process(
-            analysis_units,
-            name="qqh",
-            dataset=datasets["qqH"],
-            selections=[
-                channel_selection(channel, era, special_analysis),
-                qqH125_process_selection(channel, era),
-            ],
-            categorization=categorization,
-            channel=channel,
-        )
-        add_process(
-            analysis_units,
-            name="wh",
-            dataset=datasets["WH"],
-            selections=[
-                channel_selection(channel, era, special_analysis),
-                WH_process_selection(channel, era),
-            ],
-            categorization=categorization,
-            channel=channel,
-        )
-        add_process(
-            analysis_units,
-            name="zh",
-            dataset=datasets["ZH"],
-            selections=[
-                channel_selection(channel, era, special_analysis),
-                ZH_process_selection(channel, era),
-            ],
-            categorization=categorization,
-            channel=channel,
-        )
+        # add_process(
+        #     analysis_units,
+        #     name="ggh",
+        #     dataset=datasets["ggH"],
+        #     selections=[
+        #         channel_selection(channel, era, special_analysis),
+        #         ggH125_process_selection(channel, era),
+        #     ],
+        #     categorization=categorization,
+        #     channel=channel,
+        # )
+        # add_process(
+        #     analysis_units,
+        #     name="qqh",
+        #     dataset=datasets["qqH"],
+        #     selections=[
+        #         channel_selection(channel, era, special_analysis),
+        #         qqH125_process_selection(channel, era),
+        #     ],
+        #     categorization=categorization,
+        #     channel=channel,
+        # )
+        # add_process(
+        #     analysis_units,
+        #     name="wh",
+        #     dataset=datasets["WH"],
+        #     selections=[
+        #         channel_selection(channel, era, special_analysis),
+        #         WH_process_selection(channel, era),
+        #     ],
+        #     categorization=categorization,
+        #     channel=channel,
+        # )
+        # add_process(
+        #     analysis_units,
+        #     name="zh",
+        #     dataset=datasets["ZH"],
+        #     selections=[
+        #         channel_selection(channel, era, special_analysis),
+        #         ZH_process_selection(channel, era),
+        #     ],
+        #     categorization=categorization,
+        #     channel=channel,
+        # )
     # "tth"  : [Unit(
     #             datasets["ttH"], [
     #                 channel_selection(channel, era, special_analysis),
@@ -674,30 +681,30 @@ def get_control_units(channel, era, datasets, special_analysis):
         binning=control_binning,
         variables=variable_set,
     )
-    add_control_process(
-        control_units,
-        name="qqh",
-        dataset=datasets["qqH"],
-        selections=[
-            channel_selection(channel, era, special_analysis),
-            qqH125_process_selection(channel, era),
-        ],
-        channel=channel,
-        binning=control_binning,
-        variables=variable_set,
-    )
-    add_control_process(
-        control_units,
-        name="ggh",
-        dataset=datasets["ggH"],
-        selections=[
-            channel_selection(channel, era, special_analysis),
-            ggH125_process_selection(channel, era),
-        ],
-        channel=channel,
-        binning=control_binning,
-        variables=variable_set,
-    )
+    # add_control_process(
+    #     control_units,
+    #     name="qqh",
+    #     dataset=datasets["qqH"],
+    #     selections=[
+    #         channel_selection(channel, era, special_analysis),
+    #         qqH125_process_selection(channel, era),
+    #     ],
+    #     channel=channel,
+    #     binning=control_binning,
+    #     variables=variable_set,
+    # )
+    # add_control_process(
+    #     control_units,
+    #     name="ggh",
+    #     dataset=datasets["ggH"],
+    #     selections=[
+    #         channel_selection(channel, era, special_analysis),
+    #         ggH125_process_selection(channel, era),
+    #     ],
+    #     channel=channel,
+    #     binning=control_binning,
+    #     variables=variable_set,
+    # )
 
     if channel != "et":
         add_control_process(
@@ -736,6 +743,7 @@ def main(args):
         "tt": args.tt_friend_directory,
         "em": args.em_friend_directory,
         "mm": args.mm_friend_directory,
+        "ee": args.ee_friend_directory,
     }
     if ".root" in args.output_file:
         output_file = args.output_file
@@ -752,7 +760,7 @@ def main(args):
     nominals[era] = {}
     nominals[era]["datasets"] = {}
     nominals[era]["units"] = {}
-
+    additional_emb_procS = set()
     # Step 1: create units and book actions
     for channel in args.channels:
         nominals[era]["datasets"][channel] = get_nominal_datasets(
@@ -771,7 +779,6 @@ def main(args):
                 special_analysis,
             )
         if special_analysis == "TauES":
-            additional_emb_procS = set()
             tauESvariations = [-1.2 + 0.05 * i for i in range(0, 47)]
             add_tauES_datasets(
                 era,
@@ -787,10 +794,10 @@ def main(args):
                 ],
                 categorization,
                 additional_emb_procS,
+                shiftstring="EMBtauESshift",
             )
         if special_analysis == "EleES":
-            additional_emb_procS = set()
-            eleESvariations = [-2.5 + 0.1 * i for i in range(0, 51)]
+            eleESvariations = [-1.5 + 0.05 * i for i in range(0, 51)]
             add_tauES_datasets(
                 era,
                 channel,
@@ -805,6 +812,7 @@ def main(args):
                 ],
                 categorization,
                 additional_emb_procS,
+                shiftstring="EMBelefakeESshift",
             )
 
     if args.process_selection is None:
@@ -843,16 +851,7 @@ def main(args):
             "w",
         }
     if args.channels == ["ee"]:
-        procS = {
-            "data",
-            "zl",
-            "ttl",
-            "vvl",
-            "w",
-            "zj",
-            "ttj",
-            "vvj",
-        }
+        procS = {"data", "ttl", "ttt", "vvl", "vvt", "ztt", "zl", "w", "emb"}
     logger.info(f"Processes to be computed: {procS}")
     dataS = {"data"} & procS
     embS = {"emb"} & procS
@@ -897,7 +896,8 @@ def main(args):
                 additional_emb_procS,
                 nominals[era]["units"][channel],
                 [same_sign, anti_iso_lt],
-                do_check,
+                shiftstring="EMBtauESshift",
+                enable_check=do_check,
             )
         elif channel == "ee" and special_analysis == "EleES":
             logger.info("Booking EleES")
@@ -906,7 +906,15 @@ def main(args):
                 additional_emb_procS,
                 nominals[era]["units"][channel],
                 [same_sign],
-                do_check,
+                shiftstring="EMBelefakeESshift",
+                enable_check=do_check,
+            )
+            book_histograms(
+                um,
+                processes=embS,
+                datasets=nominals[era]["units"][channel],
+                variations=[same_sign],
+                enable_check=do_check,
             )
         else:
             book_histograms(
@@ -981,9 +989,9 @@ def main(args):
         elif channel == "ee" and special_analysis == "EleES":
             book_histograms(
                 um,
-                processes={"data", "zl", "w", "ttl"},
+                processes={"data", "zl", "w", "ttl", "vvl", "vvt", "ttt", "ztt"},
                 datasets=nominals[era]["units"][channel],
-                variations=[],
+                variations=[same_sign],
                 enable_check=do_check,
             )
         elif channel == "mm":
@@ -1018,50 +1026,50 @@ def main(args):
             #     variations=[qqh_acceptance],
             #     enable_check=do_check,
             # )
-            book_histograms(
-                um,
-                processes=simulatedProcsDS[channel],
-                datasets=nominals[era]["units"][channel],
-                variations=[jet_es],
-                enable_check=do_check,
-            )
-            # TODO add btag stuff
             # book_histograms(
             #     um,
             #     processes=simulatedProcsDS[channel],
             #     datasets=nominals[era]["units"][channel],
-            #     variations=[mistag_eff, btag_eff],
+            #     variations=[jet_es],
             #     enable_check=do_check,
             # )
-            book_histograms(
-                um,
-                processes={"ztt", "zj", "zl", "w"} & procS | signalsS,
-                datasets=nominals[era]["units"][channel],
-                variations=[recoil_resolution, recoil_response],
-                enable_check=do_check,
-            )
-            book_histograms(
-                um,
-                processes=simulatedProcsDS[channel],
-                datasets=nominals[era]["units"][channel],
-                variations=[met_unclustered],
-                enable_check=do_check,
-            )
+            # # TODO add btag stuff
+            # # book_histograms(
+            # #     um,
+            # #     processes=simulatedProcsDS[channel],
+            # #     datasets=nominals[era]["units"][channel],
+            # #     variations=[mistag_eff, btag_eff],
+            # #     enable_check=do_check,
+            # # )
+            # book_histograms(
+            #     um,
+            #     processes={"ztt", "zj", "zl", "w"} & procS | signalsS,
+            #     datasets=nominals[era]["units"][channel],
+            #     variations=[recoil_resolution, recoil_response],
+            #     enable_check=do_check,
+            # )
+            # book_histograms(
+            #     um,
+            #     processes=simulatedProcsDS[channel],
+            #     datasets=nominals[era]["units"][channel],
+            #     variations=[met_unclustered],
+            #     enable_check=do_check,
+            # )
 
-            book_histograms(
-                um,
-                processes={"ztt", "zl", "zj"},
-                datasets=nominals[era]["units"][channel],
-                variations=[zpt],
-                enable_check=do_check,
-            )
-            book_histograms(
-                um,
-                processes={"ttt", "ttl", "ttj"} & procS,
-                datasets=nominals[era]["units"][channel],
-                variations=[top_pt],
-                enable_check=do_check,
-            )
+            # book_histograms(
+            #     um,
+            #     processes={"ztt", "zl", "zj"},
+            #     datasets=nominals[era]["units"][channel],
+            #     variations=[zpt],
+            #     enable_check=do_check,
+            # )
+            # book_histograms(
+            #     um,
+            #     processes={"ttt", "ttl", "ttj"} & procS,
+            #     datasets=nominals[era]["units"][channel],
+            #     variations=[top_pt],
+            #     enable_check=do_check,
+            # )
             # Book variations common to multiple channels.
             if channel in ["et", "mt", "tt"]:
                 book_histograms(
@@ -1293,6 +1301,10 @@ def main(args):
                 )
 
     # Step 2: convert units to graphs and merge them
+    # check the booked units
+    # for unit in um.booked_units:
+    #     for action in unit.actions:
+    #         logger.debug(f"Action: {action.name} variable: {action.variable}")
     g_manager = GraphManager(um.booked_units, True)
     g_manager.optimize(args.optimization_level)
     graphs = g_manager.graphs

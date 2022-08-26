@@ -23,7 +23,7 @@ datacard_output="datacards/${NTUPLETAG}-${TAG}/${ERA}_taues"
 echo "KINGMAKER_BASEDIR: $KINGMAKER_BASEDIR"
 echo "BASEDIR: ${BASEDIR}"
 echo "output_shapes: ${output_shapes}"
-echo "XSEC_FRIENDS: ${XSEC_FRIENDS}"
+echo "FRIENDS: ${FRIENDS}"
 
 categories=("DM0" "DM1" "DM10" "DM11" "Inclusive")
 printf -v categories_string '%s,' "${categories[@]}"
