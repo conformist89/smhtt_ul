@@ -75,15 +75,7 @@ if [[ $MODE == "XSEC" ]]; then
     if [ ! -d "$XSEC_FRIENDS" ]; then
         mkdir -p $XSEC_FRIENDS
     fi
-    # if th xsec friends dir is empty, run the xsec friends script
-    if [ "$(ls -A $XSEC_FRIENDS)" ]; then
-        echo "xsec friends dir already exists"
-    else
-        echo "xsec friends dir is empty"
-        echo "running xsec friends script"
-        python3 friends/build_friend_tree.py --basepath $BASEDIR --outputpath $XSEC_FRIENDS --nthreads 20
-    fi
-    exit 0
+    python3 friends/build_friend_tree.py --basepath $BASEDIR --outputpath $XSEC_FRIENDS --nthreads 20
 fi
 echo "##############################################################################################"
 echo "#      Producing shapes for ${CHANNEL}-${ERA}-${NTUPLETAG}                                         #"
@@ -135,7 +127,8 @@ if [[ $MODE == "LOCAL" ]]; then
         --era $ERA --num-processes 4 --num-threads 4 \
         --optimization-level 1 \
         --special-analysis "EleES" \
-        --control-plot-set ${VARIABLES} --skip-systematic-variations \
+        --skip-systematic-variations \
+        --control-plot-set ${VARIABLES} \
         --output-file $shapes_output
 fi
 
@@ -211,18 +204,18 @@ fi
 
 if [[ $MODE == "FIT" ]]; then
     source utils/setup_cmssw.sh
-    for INPUT in output/$datacard_output/htt_ee_*; do
-        echo "[INFO] Fit workspace from path ${INPUT}"
+    for INPUT in output/$datacard_output/htt_ee_barrel; do
+        echo "[INFO] Fit barrel workspace from path ${INPUT}"
         WORKSPACE=${INPUT}/workspace.root
         combine \
             -M MultiDimFit \
             -n _initialFit_Test \
             --algo singles \
             --redefineSignalPOIs elees,r \
-            --setParameterRanges elees=-2.5,2.5:r=0.8,1.2 \
+            --setParameterRanges elees=-0.5,0.3:r=0.7,1.2 \
             --robustFit 1 \
             -m 0 -d ${WORKSPACE} \
-            --setParameters elees=0.0,r=1.0 \
+            --setParameters elees=-0.42,r=0.85 \
             --setRobustFitAlgo=Minuit2 \
             --setRobustFitStrategy=0 \
             --setRobustFitTolerance=0.2 \
@@ -235,20 +228,65 @@ if [[ $MODE == "FIT" ]]; then
         combineTool.py -M MultiDimFit -d ${WORKSPACE} \
             --algo grid \
             --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
-            -P elees \
-            --setParameters elees=-0.45 \
+            -P elees -m 0 \
+            --redefineSignalPOIs elees,r \
+            --setParameters elees=-0.421,r=0.85 \
+            --setParameterRanges elees=-0.43,-0.41:r=0.8,1.2 \
             --floatOtherPOIs 1 \
-            --points 47 \
-            --setParameterRanges elees=-2.5,2.5 \
+            --points 200 \
+            --robustFit 1 \
             --setRobustFitAlgo=Minuit2 \
             --setRobustFitStrategy=0 \
             --setRobustFitTolerance=0.2 \
             --X-rtd FITTER_NEW_CROSSING_ALGO \
             --X-rtd FITTER_NEVER_GIVE_UP \
             --X-rtd FITTER_BOUND \
-            --robustFit 1 \
+            --cminFallbackAlgo "Minuit2,0:0.1" \
+            --cminFallbackAlgo "Minuit,0:0.1" \
             -n ${ERA}_elees
-        cp higgsCombine${ERA}_elees.MultiDimFit.mH120.root ${INPUT}
+        cp higgsCombine${ERA}_elees.MultiDimFit.mH0.root ${INPUT}
+    done
+    for INPUT in output/$datacard_output/htt_ee_endcap; do
+        echo "[INFO] Fit barrel workspace from path ${INPUT}"
+        WORKSPACE=${INPUT}/workspace.root
+        combine \
+            -M MultiDimFit \
+            -n _initialFit_Test \
+            --algo singles \
+            --redefineSignalPOIs elees,r \
+            --setParameterRanges elees=-2.5,1.0:r=0.7,1.2 \
+            --robustFit 1 \
+            -m 0 -d ${WORKSPACE} \
+            --setParameters elees=-0.42,r=0.85 \
+            --setRobustFitAlgo=Minuit2 \
+            --setRobustFitStrategy=0 \
+            --setRobustFitTolerance=0.2 \
+            --X-rtd FITTER_NEW_CROSSING_ALGO \
+            --X-rtd FITTER_NEVER_GIVE_UP \
+            --X-rtd FITTER_BOUND \
+            --cminFallbackAlgo "Minuit2,0:0.1" \
+            --cminFallbackAlgo "Minuit,0:0.1"
+
+        combineTool.py -M MultiDimFit -d ${WORKSPACE} \
+            --algo grid \
+            --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
+            -P elees -m 0 \
+            --redefineSignalPOIs elees,r \
+            --setParameters elees=-0.688,r=0.85 \
+            --setParameterRanges elees=-0.70,-0.67:r=0.8,1.2 \
+            --floatOtherPOIs 1 \
+            --points 200 \
+            --robustFit 1 \
+            --setRobustFitAlgo=Minuit2 \
+            --setRobustFitStrategy=0 \
+            --setRobustFitTolerance=0.2 \
+            --X-rtd FITTER_NEW_CROSSING_ALGO \
+            --X-rtd FITTER_NEVER_GIVE_UP \
+            --X-rtd FITTER_BOUND \
+            --cminFallbackAlgo "Minuit2,0:0.1" \
+            --cminFallbackAlgo "Minuit,0:0.1" \
+            -n ${ERA}_elees
+        cp higgsCombine${ERA}_elees.MultiDimFit.mH0.root ${INPUT}
     done
     exit 0
 fi
@@ -256,20 +294,20 @@ fi
 if [[ $MODE == "POSTFIT" ]]; then
     source utils/setup_cmssw.sh
     for INPUT in output/$datacard_output/htt_ee_*; do
+        CATEGORY=$(basename $INPUT)
         python fitting/plot1DScan.py \
-            --main ${INPUT}/higgsCombine${ERA}_elees.MultiDimFit.mH120.root \
+            --main ${INPUT}/higgsCombine${ERA}_elees.MultiDimFit.mH0.root \
             --POI elees \
-            --y-max 10 \
-            --remin-main --improve \
-            --output ${ERA}_elees_plot_nll \
-            --translate fitting/translate.json
+            --output ${ERA}_${CATEGORY}_elees_plot_nll \
+            --translate fitting/translate.json \
+            --y-max 10 --main-color 2 --chop 100
         done
     exit 0
 fi
 
 if [[ $MODE == "PLOT-POSTFIT" ]]; then
     source utils/setup_cmssw.sh
-    for RESDIR in output/$datacard_output/htt_ee_*; do
+    for RESDIR in output/$datacard_output/htt_ee_barrel; do
         WORKSPACE=${RESDIR}/workspace.root
         echo "[INFO] Printing fit result for category $(basename $RESDIR)"
         FILE=${RESDIR}/postfitshape.root
@@ -279,7 +317,8 @@ if [[ $MODE == "PLOT-POSTFIT" ]]; then
             -M FitDiagnostics \
             -d $WORKSPACE \
             --redefineSignalPOIs elees,r \
-            --setParameterRanges elees=-1.2,1.1:r=0.8,1.2 \
+            --setParameters elees=-0.421,r=0.85 \
+            --setParameterRanges elees=-0.43,-0.41:r=0.8,1.2 \
             --robustFit 1 -v1 \
             --robustHesse 1 \
             --X-rtd MINIMIZER_analytic \
@@ -291,6 +330,30 @@ if [[ $MODE == "PLOT-POSTFIT" ]]; then
             -o ${FILE} \
             -f ${FITFILE}:fit_s --postfit
     done
+        for RESDIR in output/$datacard_output/htt_ee_endcap; do
+        WORKSPACE=${RESDIR}/workspace.root
+        echo "[INFO] Printing fit result for category $(basename $RESDIR)"
+        FILE=${RESDIR}/postfitshape.root
+        FITFILE=${RESDIR}/fitDiagnostics.${ERA}.root
+        combine \
+            -n .$ERA \
+            -M FitDiagnostics \
+            -d $WORKSPACE \
+            --redefineSignalPOIs elees,r \
+            --setParameters elees=-0.688,r=0.85 \
+            --setParameterRanges elees=-0.69,-0.67:r=0.8,1.2 \
+            --robustFit 1 -v1 \
+            --robustHesse 1 \
+            --X-rtd MINIMIZER_analytic \
+            --cminDefaultMinimizerStrategy 0
+        mv fitDiagnostics.2018.root $FITFILE
+        echo "[INFO] Building Prefit/Postfit shapes"
+        PostFitShapesFromWorkspace -w ${WORKSPACE} \
+            -m 125 -d ${RESDIR}/combined.txt.cmb \
+            -o ${FILE} \
+            -f ${FITFILE}:fit_s --postfit
+    done
+
     source utils/setup_root.sh
     i=1
     for RESDIR in output/$datacard_output/htt_ee_*; do
@@ -304,8 +367,8 @@ if [[ $MODE == "PLOT-POSTFIT" ]]; then
             mkdir -p output/postfitplots/
         fi
         echo "[INFO] Postfits plots for category $CATEGORY"
-        python3 plotting/plot_shapes.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --fake-factor --single-category $CATEGORY --categories "None" -o output/postfitplots/ --prefit
-        python3 plotting/plot_shapes.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --fake-factor --single-category $CATEGORY --categories "None" -o output/postfitplots/
+        python3 plotting/plot_shapes_eleES_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --fake-factor --single-category $CATEGORY --categories "None" -o output/postfitplots/ --prefit
+        python3 plotting/plot_shapes_eleES_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --fake-factor --single-category $CATEGORY --categories "None" -o output/postfitplots/
         i=$((i + 1))
     done
     exit 0

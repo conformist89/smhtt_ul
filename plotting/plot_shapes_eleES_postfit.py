@@ -133,7 +133,7 @@ def main(args):
     else:
         channel_categories = {
             "mt": ["1", "2", "3", "4", "5", "6", "7"],
-            "ee": ["12" ,"13"]
+            "ee": ["12", "13"],
         }
 
         signalcats = []
@@ -160,7 +160,7 @@ def main(args):
         "9": "DM10_11",
         "12": "barrel",
         "13": "endcap",
-        "100": "Control Region"
+        "100": "Control Region",
     }
     if args.linear:
         split_value = 0
@@ -219,7 +219,7 @@ def main(args):
                 list(category_dict.values()).index(catname)
             ]
         if catname == "100" and channel == "mm":
-            categories =["100"]
+            categories = ["100"]
         # categories = set(channel_categories[channel]).intersection(
         #     set([args.single_category])
         # )
@@ -230,14 +230,7 @@ def main(args):
     logger.warning("Categories: {}".format(categories))
     for category in categories:
         rootfile = rootfile_parser.Rootfile_parser(args.input, prefit=args.prefit)
-        if channel == "em" and args.embedding:
-            bkg_processes = ["VVL", "W", "TTL", "ZL", "QCD", "EMB"]
-        elif channel == "em" and not args.embedding:
-            bkg_processes = ["VVL", "W", "TTL", "ZL", "QCD", "ZTT"]
-        elif channel == "mm":
-            bkg_processes = ["VVL", "W", "TTL", "ZL"]
-        else:
-            bkg_processes = [b for b in all_bkg_processes]
+        bkg_processes = ["VV", "W", "TT", "ZTT", "EMB"]
         legend_bkg_processes = copy.deepcopy(bkg_processes)
         legend_bkg_processes.reverse()
         # create plot
@@ -248,16 +241,31 @@ def main(args):
             plot = dd.Plot([0.5, [0.3, 0.28]], "ModTDR", r=0.04, l=0.14, width=width)
 
         # get background histograms
-        for process in bkg_processes:
-            try:
-                plot.add_hist(
-                    rootfile.get(era, channel, category, process), process, "bkg"
-                )
-                plot.setGraphStyle(
-                    process, "hist", fillcolor=styles.color_dict[process]
-                )
-            except BaseException:
-                pass
+        ttbar = rootfile.get(era, channel, category, "TTT")
+        ttbar.Add(rootfile.get(era, channel, category, "TTL"))
+        plot.add_hist(ttbar, "TT", "bkg")
+        plot.setGraphStyle("TT", "hist", fillcolor=styles.color_dict["TT"])
+        # diboson
+        diboson = rootfile.get(era, channel, category, "VVT")
+        diboson.Add(rootfile.get(era, channel, category, "VVL"))
+        plot.add_hist(diboson, "VV", "bkg")
+        plot.setGraphStyle("VV", "hist", fillcolor=styles.color_dict["VV"])
+        # w
+        plot.add_hist(
+            rootfile.get(era, channel, category, "W"), "W", "bkg"
+        )
+        plot.setGraphStyle("W", "hist", fillcolor=styles.color_dict["W"])
+        # ztt
+        plot.add_hist(
+            rootfile.get(era, channel, category, "ZTT"), "ZTT", "bkg"
+        )
+        plot.setGraphStyle("ZTT", "hist", fillcolor=styles.color_dict["ZTT"])
+        # emb
+        plot.add_hist(
+            rootfile.get(era, channel, category, "EMB"), "EMB", "bkg"
+        )
+        plot.setGraphStyle("EMB", "hist", fillcolor=styles.color_dict["ZL"])
+
         data_obs = rootfile.get(era, channel, category, "data_obs")
         plot.add_hist(data_obs, "data_obs")
 
@@ -305,8 +313,7 @@ def main(args):
         )
 
         plot.subplot(2).setYlims(0.75, 1.25)
-        if channel == "ee":
-            plot.subplot(2).setYlims(0.5, 1.5)
+        plot.subplot(2).setYlims(0.5, 1.5)
 
         if not args.linear:
             plot.subplot(1).setYlims(0.1, split_dict[channel])
@@ -347,20 +354,13 @@ def main(args):
         # create legends
         for i in range(2):
             plot.add_legend(width=0.6, height=0.15)
-            for process in legend_bkg_processes:
-                try:
-                    plot.legend(i).add_entry(
-                        0,
-                        process,
-                        styles.legend_label_dict[
-                            process.replace("TTL", "TT").replace("VVL", "VV")
-                        ],
-                        "f",
-                    )
-                except BaseException:
-                    pass
+            plot.legend(i).add_entry(0, "TT", "t#bar{t}", "f")
+            plot.legend(i).add_entry(0, "VV", "Diboson", "f")
+            plot.legend(i).add_entry(0, "W", "W + Jets", "f")
+            plot.legend(i).add_entry(0, "ZTT", "Z#rightarrow#tau#tau", "f")
+            plot.legend(i).add_entry(0, "EMB", "#mu#rightarrow e embedded", "f")
             plot.legend(i).add_entry(0, "total_bkg", "Bkg. unc.", "f")
-            plot.legend(i).add_entry(0, "data_obs", "Data", "PE")
+            plot.legend(i).add_entry(0, "data_obs", "Observed", "PE2L")
             plot.legend(i).setNColumns(3)
         plot.legend(0).Draw()
         plot.legend(1).setAlpha(0.0)

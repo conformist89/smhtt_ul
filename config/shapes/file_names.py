@@ -610,8 +610,8 @@ files = {
                     # "W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
                     # "W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
                     "WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
-                    #     "EWKWMinus2JetsWToLNuM50_RunIIAutumn18MiniAOD_102X_13TeV_MINIAOD_madgraph-pythia8_v1",
-                    #     "EWKWPlus2JetsWToLNuM50_RunIIAutumn18MiniAOD_102X_13TeV_MINIAOD_madgraph-pythia8_v1",
+                    "EWKWMinus2JetsWToLNuM50_RunIIAutumn18MiniAOD_102X_13TeV_MINIAOD_madgraph-pythia8_v1",
+                    "EWKWPlus2JetsWToLNuM50_RunIIAutumn18MiniAOD_102X_13TeV_MINIAOD_madgraph-pythia8_v1",
                 ],
             },
             **common_files_2018
@@ -695,6 +695,48 @@ files = {
                     "WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
                 ],
             },
+        ),
+        "ee": dict(
+            {
+                "data": [
+                    "EGamma_Run2018A-UL2018",
+                    "EGamma_Run2018B-UL2018",
+                    "EGamma_Run2018C-UL2018",
+                    "EGamma_Run2018D-UL2018",
+                ],
+                "DY": [
+                    "DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                ],
+                "TT": [
+                    "TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "TTToHadronic_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                ],
+                "VV": [
+                    "WZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "ZZTo4L_TuneCP5_13TeV_powheg_pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                ],
+                "W": [
+                    "W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "W2JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                    "WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
+                ],
+                "EMB": [
+                    "ElectronEmbedding_Run2018A-UL2018",
+                    "ElectronEmbedding_Run2018B-UL2018",
+                    "ElectronEmbedding_Run2018C-UL2018",
+                    "ElectronEmbedding_Run2018D-UL2018",
+                ],
+            }
         ),
     },
 }

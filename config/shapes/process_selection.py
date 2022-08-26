@@ -152,6 +152,7 @@ def lumi_weight(era):
         raise ValueError("Given era {} not defined.".format(era))
     return ("{} * 1000.0".format(lumi), "lumi")
 
+
 # def Data_base_process_selection(channel, era):
 #     if channel == "tt" and era == "2018":
 #         return Selection(name="", cuts=["((trg_double_tau35_tightiso_tightid==1) || (trg_double_tau40_mediumiso_tightid==1))", "trg_extension"])
@@ -202,6 +203,12 @@ def MC_base_process_selection(channel, era):
         tauidweight = None
         vsmu_weight = None
         trgweight = ("1", "trgweight")
+    elif channel == "ee":
+        tauidweight = None
+        vsmu_weight = None
+        trgweight = ("trg_wgt_single_ele32", "trgweight")
+        isoweight = ("iso_wgt_ele_1 * iso_wgt_ele_2", "isoweight")
+        idweight = ("id_wgt_ele_1 * id_wgt_ele_2", "idweight")
     else:
         raise ValueError("Given channel {} not defined.".format(channel))
     MC_base_process_weights = [
@@ -222,7 +229,10 @@ def MC_base_process_selection(channel, era):
         lumi_weight(era),
     ]
     # print("MC_base_process_weights:", [weight for weight in MC_base_process_weights if weight is not None])
-    return Selection(name="MC base", weights=[weight for weight in MC_base_process_weights if weight is not None])
+    return Selection(
+        name="MC base",
+        weights=[weight for weight in MC_base_process_weights if weight is not None],
+    )
 
 
 def dy_stitching_weight(era):
@@ -287,23 +297,28 @@ def W_stitching_weight(era):
     #                             "wj_stitching_weight")
     #     # xsec_NNLO [pb] = 61526.7, N_inclusive = 74635450, xsec_NNLO/N_inclusive = 0.000824363 [pb] weights: [1.0, 0.17130790070213678, 0.10621353263705156, 0.0651931323853371, 0.06454171311164039]
     if era == "2018":
+        # weight = (
+        #     "((0.0008662455*((npartons <= 0 || npartons >= 5)*1.0 + (npartons == 1)*0.174101755934 + (npartons == 2)*0.136212630745 + (npartons == 3)*0.0815667415121 + (npartons == 4)*0.06721295702670023)) * (genbosonmass>=0.0) + numberGeneratedEventsWeight * crossSectionPerEventWeight * (genbosonmass<0.0))",
+        #     "wj_stitching_weight",
+        # )
+        # # xsec_NNLO [pb] = 61526.7, N_inclusive = 71026861, xsec_NNLO/N_inclusive = 0.0008662455 [pb] weights: [1.0, 0.1741017559343336, 0.13621263074538312, 0.08156674151214884, 0.06721295702670023]
         weight = (
-            "((0.0008662455*((npartons <= 0 || npartons >= 5)*1.0 + (npartons == 1)*0.174101755934 + (npartons == 2)*0.136212630745 + (npartons == 3)*0.0815667415121 + (npartons == 4)*0.06721295702670023)) * (genbosonmass>=0.0) + numberGeneratedEventsWeight * crossSectionPerEventWeight * (genbosonmass<0.0))",
+            "((0.0008662455*((npartons <= 0 || npartons >= 5) + (npartons == 1)*0.162484133481749 + (npartons == 2)*0.106891516714748 + (npartons == 3)*0.060912760184367 + (npartons == 4)*0.066423010536769)) * (genbosonmass>=0.0) + numberGeneratedEventsWeight * crossSectionPerEventWeight * (genbosonmass<0.0))",
             "wj_stitching_weight",
         )
-        # xsec_NNLO [pb] = 61526.7, N_inclusive = 71026861, xsec_NNLO/N_inclusive = 0.0008662455 [pb] weights: [1.0, 0.1741017559343336, 0.13621263074538312, 0.08156674151214884, 0.06721295702670023]
+
     return weight
 
 
 def W_process_selection(channel, era):
     W_process_weights = MC_base_process_selection(channel, era).weights
-    W_process_weights.extend(
-        [
-            ("numberGeneratedEventsWeight", "numberGeneratedEventsWeight"),
-            ("crossSectionPerEventWeight", "crossSectionPerEventWeight"),
-        ]
-    )
-    # W_process_weights.append(W_stitching_weight(era)) # TODO add W stitching weight in when npartons is available
+    # W_process_weights.extend(
+    #     [
+    #         ("numberGeneratedEventsWeight", "numberGeneratedEventsWeight"),
+    #         ("crossSectionPerEventWeight", "crossSectionPerEventWeight"),
+    #     ]
+    # )
+    W_process_weights.append(W_stitching_weight(era))
     return Selection(name="W", weights=W_process_weights)
 
 
@@ -415,12 +430,14 @@ def __get_ZTT_cut(channel):
         return "gen_match_1==3 && gen_match_2==4"
     elif "mm" in channel:
         return "gen_match_1==4 && gen_match_2==4"
+    elif "ee" in channel:
+        return "gen_match_1==3 && gen_match_2==3"
 
 
 def ZTT_embedded_process_selection(channel, era):
     ztt_embedded_weights = [
-        ("emb_genweight", "emb_genweight"),
-        ("emb_idsel_wgt_1*emb_idsel_wgt_2*emb_triggersel_wgt", "emb_selection_weight"),
+        # ("emb_genweight", "emb_genweight"),
+        # ("emb_idsel_wgt_1*emb_idsel_wgt_2*emb_triggersel_wgt", "emb_selection_weight"),
     ]
     if "mt" in channel:
         ztt_embedded_weights.extend(
@@ -428,7 +445,7 @@ def ZTT_embedded_process_selection(channel, era):
                 ("gen_match_1==4 && gen_match_2==5", "emb_veto"),
                 ("iso_wgt_mu_1", "isoweight"),
                 ("id_wgt_mu_1", "idweight"),
-                ("trg_wgtsingle_mu24Ormu27", "trgweight"), # TODO fix naming
+                ("trg_wgtsingle_mu24Ormu27", "trgweight"),  # TODO fix naming
                 # ("((gen_match_2==5)*id_wgt_tau_vsJet_Tight_2 + (gen_match_2!=5))", "taubyIsoIdWeight")
                 # (
                 #     "id_wgt_tau_vsJet_Tight_2",
@@ -446,7 +463,10 @@ def ZTT_embedded_process_selection(channel, era):
                 ("iso_wgt_ele_1", "isoweight"),
                 ("id_wgt_ele_1", "idweight"),
                 ("trg_wgt_single_ele32orele35", "trgweight"),
-                ("((gen_match_2==5)*id_wgt_tau_vsJet_Tight_2 + (gen_match_2!=5))", "taubyIsoIdWeight")
+                (
+                    "((gen_match_2==5)*id_wgt_tau_vsJet_Tight_2 + (gen_match_2!=5))",
+                    "taubyIsoIdWeight",
+                )
                 # (
                 #     "id_wgt_tau_vsJet_Tight_2",
                 #     "taubyIsoIdWeight",
@@ -481,7 +501,14 @@ def ZTT_embedded_process_selection(channel, era):
                 ("(gen_match_1==3 && gen_match_2==4)", "emb_gen_match"),
                 ("iso_wgt_ele_1 * iso_wgt_mu_2", "isoweight"),
                 ("id_wgt_ele_1 * id_wgt_mu_2", "idweight"),
-                # triggerweight_emb(channel, era),
+            ]
+        )
+    elif "ee" in channel:
+        ztt_embedded_weights.extend(
+            [
+                ("iso_wgt_ele_1 * iso_wgt_ele_2", "isoweight"),
+                ("id_wgt_ele_1 * id_wgt_ele_2", "idweight"),
+                ("trg_wgt_single_ele32", "trgweight"),
             ]
         )
 
@@ -491,6 +518,13 @@ def ZTT_embedded_process_selection(channel, era):
             "dy_genuine_tau",
         )
     ]
+    if "ee" in channel:
+        ztt_embedded_cuts = [
+            (
+                "(gen_match_1==1 && gen_match_2==1)",
+                "dy_genuine_di_ele",
+            )
+        ]
 
     return Selection(
         name="Embedded", cuts=ztt_embedded_cuts, weights=ztt_embedded_weights
@@ -531,6 +565,11 @@ def __get_ZL_cut(channel):
     elif "mm" in channel:
         emb_veto = "!(gen_match_1==4 && gen_match_2==4)"
         ff_veto = "(1.0)"
+    elif "ee" in channel:
+        emb_veto = (
+            "!(gen_match_1==1 && gen_match_2==1) && !(gen_match_1==3 && gen_match_2==3)"
+        )
+        ff_veto = "(1.0)"
     return (emb_veto, ff_veto)
 
 
@@ -552,7 +591,7 @@ def __get_ZJ_cut(channel):
     elif "em" in channel:
         return "0 == 1"
     else:
-        return ""
+        return "0 == 1"
 
 
 def TTT_process_selection(channel):
@@ -567,6 +606,8 @@ def TTT_process_selection(channel):
         tt_cut = "gen_match_1==3 && gen_match_2==4"
     elif "mm" in channel:
         tt_cut = "gen_match_1==4 && gen_match_2==4"
+    elif "ee" in channel:
+        tt_cut = "gen_match_1==3 && gen_match_2==3"
     return Selection(name="TTT", cuts=[(tt_cut, "ttt_cut")])
 
 
@@ -588,6 +629,11 @@ def TTL_process_selection(channel):
     elif "mm" in channel:
         emb_veto = "!(gen_match_1==4 && gen_match_2==4)"
         ff_veto = "(1.0)"
+    elif "ee" in channel:
+        emb_veto = (
+            "!(gen_match_1==1 && gen_match_2==1) && !(gen_match_1==3 && gen_match_2==3)"
+        )
+        ff_veto = "(1.0)"
     return Selection(
         name="TTL",
         cuts=[
@@ -603,7 +649,7 @@ def TTJ_process_selection(channel):
         ct = "(gen_match_2 == 6 && gen_match_2 == 6)"
     elif "tt" in channel:
         ct = "(gen_match_1 == 6 || gen_match_2 == 6)"
-    elif "em" in channel:
+    elif "em" in channel or "ee" in channel:
         ct = "0 == 1"
     return Selection(name="TTJ", cuts=[(ct, "tt_fakes")])
 
@@ -620,6 +666,8 @@ def VVT_process_selection(channel):
         tt_cut = "gen_match_1==3 && gen_match_2==4"
     elif "mm" in channel:
         tt_cut = "gen_match_1==4 && gen_match_2==4"
+    elif "ee" in channel:
+        tt_cut = "gen_match_1==3 && gen_match_2==3"
     return Selection(name="VVT", cuts=[(tt_cut, "vvt_cut")])
 
 
@@ -629,7 +677,7 @@ def VVJ_process_selection(channel):
         ct = "(gen_match_2 == 6 && gen_match_2 == 6)"
     elif "tt" in channel:
         ct = "(gen_match_1 == 6 || gen_match_2 == 6)"
-    elif "em" in channel:
+    elif "em" in channel or "ee" in channel:
         ct = "0.0 == 1.0"
     return Selection(name="VVJ", cuts=[(ct, "vv_fakes")])
 
@@ -651,6 +699,11 @@ def VVL_process_selection(channel):
         ff_veto = "(1.0)"
     elif "mm" in channel:
         emb_veto = "!(gen_match_1==4 && gen_match_2==4)"
+        ff_veto = "(1.0)"
+    elif "ee" in channel:
+        emb_veto = (
+            "!(gen_match_1==1 && gen_match_2==1) && !(gen_match_1==3 && gen_match_2==3)"
+        )
         ff_veto = "(1.0)"
     return Selection(
         name="VVL",
@@ -855,6 +908,7 @@ def qqH125_process_selection(channel, era):
     ]
     return Selection(name="qqH125", weights=qqH125_weights, cuts=qqH125_cuts)
 
+
 def FF_training_process_selection(channel, era):
     cuts = []
     weights = []
@@ -862,9 +916,7 @@ def FF_training_process_selection(channel, era):
         cuts = [
             ("id_tau_vsJet_Tight_2<0.5&&id_tau_vsJet_VLoose_2>0.5", "tau_anti_iso"),
         ]
-        weights = [
-            ("ff2_nom", "fake_factor")
-        ]
+        weights = [("ff2_nom", "fake_factor")]
     elif channel == "tt":
         raise NotImplementedError("FF training not implemented for tt")
     elif channel == "em":

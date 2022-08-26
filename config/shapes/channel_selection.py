@@ -118,7 +118,9 @@ def channel_selection(channel, era, special=None):
     # Special selection for TauID measurement
     if special == "TauID":
         if channel != "mt" and channel != "mm":
-            raise ValueError("TauID measurement is only available for mt (with mm control region)")
+            raise ValueError(
+                "TauID measurement is only available for mt (with mm control region)"
+            )
         if channel == "mt":
             cuts.extend(
                 [
@@ -143,10 +145,10 @@ def channel_selection(channel, era, special=None):
         # for mm we just need the control region between 60 and 120 GeV as a single bin
         if channel == "mm":
             cuts = [
-                    ("q_1*q_2<0", "os"),
-                    ("m_vis>50", "m_vis"),
-                    ("iso_1<0.15 && iso_2<0.15", "muon_iso"),
-                ]
+                ("q_1*q_2<0", "os"),
+                ("m_vis>50", "m_vis"),
+                ("iso_1<0.15 && iso_2<0.15", "muon_iso"),
+            ]
             if era == "2018":
                 cuts.append(
                     (
@@ -182,23 +184,27 @@ def channel_selection(channel, era, special=None):
         else:
             raise ValueError("Given era does not exist")
         return Selection(name="mt", cuts=cuts)
-    elif special == "eleES":
+    elif special == "EleES":
         if channel != "ee":
             raise ValueError("EleES measurement is done in the ee channel only")
-        cuts.extend(
-            [
-                ("iso_1<0.15 && iso_2<0.15", "muon_iso"),
-            ]
-        )
+        cuts = [
+            ("extraelec_veto>0.5", "extraelec_veto"),
+            # ("extramuon_veto<0.5", "extramuon_veto"),
+            ("dimuon_veto<0.5", "dilepton_veto"),
+            ("q_1*q_2<0", "os"),
+            ("iso_1<0.1 && iso_2<0.1", "ele_iso"),
+            ("abs(eta_1)<2.1 && abs(eta_2)<2.1", "electron_eta"),
+            # ("met < 100", "met"),
+        ]
         if era == "2018":
             cuts.append(
                 (
-                    "pt_2>33 && pt_1>=20 && ((trg_single_ele32 == 1) || (trg_single_ele35 == 1))",
+                    "pt_2>33 && pt_1>=33 && ( trg_single_ele32 == 1)",
                     "trg_selection",
                 ),
             )
         else:
-            raise ValueError("Given era does not exist")
+            raise ValueError(f"Given era {era} does not exist")
         return Selection(name="ee", cuts=cuts)
     else:
-        raise ValueError("Given special selection does not exist")
+        raise ValueError(f"Given special selection {special} does not exist")

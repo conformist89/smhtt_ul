@@ -193,6 +193,7 @@ def BuildScan(scan, param, files, color, yvals, chop,
                     partial(Eval, spline),
                     graph.GetX()[0],
                     graph.GetX()[graph.GetN() - 1], 1)
+    print("Graph defined from %f to %f" % (graph.GetX()[0], graph.GetX()[graph.GetN() - 1]))
     func.SetNpx(NPX)
     NAMECOUNTER += 1
     func.SetLineColor(color)
@@ -227,25 +228,27 @@ def BuildScan(scan, param, files, color, yvals, chop,
     else:
         val_2sig = (0., 0., 0.)
         cross_2sig = cross_1sig
-    print val[0]+val[2]-0.1,val[0]+val[1]+0.1
+    modifier = 0.01
+    print("Fitrange: [{} , {}] - width: {}".format(val[0]+val[2]-modifier,val[0]+val[1]+modifier, val[1]-val[2]+2*modifier))
     del func # func = ROOT.TF1("func","(x<{0})*[0]*(x-[1])**2+(x>{0})*[2]*(x-[3])**2".format(bestfit),-2.4,1.6)
-    # func = ROOT.TF1("func","[0]*x**4+[1]*x**3+[2]*x**2+[3]*x",val[0]+val[2]-0.1,val[0]+val[1]+0.1)
-    # func = ROOT.TF1("func","[0]*(x-[1])**2",val[0]+val[2]-0.1,val[0]+val[1]+0.1)
-    # func = ROOT.TF1("func","[0]*(x-[1])**2",val[0]+val[2]-0.1,val[0]+val[1]+0.1)
-    func = ROOT.TF1("func","[0]*(x-[1])**2",val[0]+val[2]-0.1,val[0]+val[1]+0.1)
-    func = ROOT.TF1("func","([0]*x**2+[1]*x+[2])+([3]*x**2+[4]*x+[5])",val[0]+val[2]-0.1,val[0]+val[1]+0.1)
-    fitresult = graph.Fit(func,"S","",val[0]+val[2]-0.1,val[0]+val[1]+0.1)
+    # func = ROOT.TF1("func","[0]*x**4+[1]*x**3+[2]*x**2+[3]*x+[4]",val[0]+val[2]-modifier,val[0]+val[1]+modifier)
+    # func = ROOT.TF1("func","[0]*(x-[1])**2",val[0]+val[2]-modifier,val[0]+val[1]+modifier)
+    # func = ROOT.TF1("func","[0]*(x-[1])**2",val[0]+val[2]-modifier,val[0]+val[1]+modifier)
+    # func = ROOT.TF1("func","[0]*(x-[1])**2",val[0]+val[2]-modifier,val[0]+val[1]+modifier)
+    # func = ROOT.TF1("func","([0]*x**2+[1]*x+[2])+([3]*x**2+[4]*x+[5])",val[0]+val[2]-modifier,val[0]+val[1]+modifier)
+    func = ROOT.TF1("func","[0]*x**2+[1]*x+[2]",val[0]+val[2]-modifier,val[0]+val[1]+modifier)
+    fitresult = graph.Fit(func,"S","",val[0]+val[2]-modifier,val[0]+val[1]+modifier)
     bestfit = func.GetMinimumX()
-    # func = ROOT.TF1("func","(x<{0})*[0]*(x-{0})**2+(x>={0})*[1]*(x-{0})**2".format(bestfit),val[0]+val[2]-0.1,val[0]+val[1]+0.1)
+    # func = ROOT.TF1("func","(x<{0})*[0]*(x-{0})**2+(x>={0})*[1]*(x-{0})**2".format(bestfit),val[0]+val[2]-modifier,val[0]+val[1]+modifier)
 
-    # fitresult = graph.Fit(func,"S","",val[0]+val[2]-0.1,val[0]+val[1]+0.1)
+    # fitresult = graph.Fit(func,"S","",val[0]+val[2]-modifier,val[0]+val[1]+modifier)
     # bestfit = func.GetMinimumX()
     minimum_y = func.GetMinimum()
     print minimum_y
     func.SetLineColor(color)
     func.SetLineWidth(3)
     import numpy as np
-    x_values = np.linspace(val[0]+val[2]-0.1,val[0]+val[1]+0.1,10000)
+    x_values = np.linspace(val[0]+val[2]-modifier,val[0]+val[1]+modifier,10000)
     x_low = 0.0
     x_high = 0.0
     for x in x_values:
@@ -487,7 +490,7 @@ axishist.SetMaximum(args.y_max)
 axishist.SetMinimum(0.0)
 
 # axishist.GetYaxis().SetTitle("- 2 #Delta ln #Lambda(%s)" % fixed_name)
-axishist.GetYaxis().SetTitle("#minus2 ln #Lambda (r)")
+axishist.GetYaxis().SetTitle("#minus2 ln #Lambda")
 axishist.GetXaxis().SetTitle("%s" % fixed_name)
 if args.x_title is not None:
     axishist.GetXaxis().SetTitle(args.x_title)
@@ -772,12 +775,13 @@ subtext = 'Own Work}'
 if args.pub:
     subtext = '{#it{LHC} #bf{Run 1}}'
     # subtext = '#it{#splitline{LHC Run 1}{Internal}}'
-plot.DrawCMSLogo(pads[0], 'CMS','#it{Internal}',
+plot.DrawCMSLogo(pads[0], 'CMS','#it{Own Work}',
                   11, 0.045, 0.035, 1.2, '', 0.9 if args.pub else 0.8)
 # plot.DrawCMSLogo(pads[0], '#it{ATLAS}#bf{ and }CMS',
 #                  '#it{LHC Run 1 Internal}', 11, 0.045, 0.035, 1.2)
 # plot.DrawCMSLogo(pads[0], '#it{ATLAS}#bf{ and }CMS', '#it{LHC Run 1
 # Preliminary}', 11, 0.025, 0.035, 1.1, cmsTextSize = 1.)
+
 
 if args.POI_line is not None:
     if args.legend_pos == 5:
@@ -864,6 +868,11 @@ else:
 
 legend.AddEntry(main_scan['graph'], "Observed", 'AP')
 legend.Draw()
+
+# latex = ROOT.TLatex()
+# latex.SetNDC()
+latex.SetTextSize(0.03)
+latex.DrawLatex(0.77, 0.95, "59.83 fb^{-1} (13 TeV)")
 
 save_graph = main_scan['graph'].Clone()
 save_graph.GetXaxis().SetTitle('%s = %.3f %+.3f/%+.3f' %

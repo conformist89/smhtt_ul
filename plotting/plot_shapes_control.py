@@ -104,7 +104,7 @@ def main(info):
         else:
             split_value = 101
 
-    split_dict = {c: split_value for c in ["et", "mt", "tt", "em", "mm"]}
+    split_dict = {c: split_value for c in ["et", "mt", "tt", "em", "mm", "ee"]}
 
     bkg_processes = [
         "VVL", "TTL", "ZL", "jetFakesEMB", "EMB"
@@ -180,6 +180,11 @@ def main(info):
             "QCD", "VVT", "VVL", "W", "TTT", "TTL", "ZTT", "ZL"
         ]
 
+    if channel == "ee":
+        bkg_processes = [
+            "VVT", "VVL", "W", "TTT", "TTL", "ZL", "ZTT", "EMB",
+        ]
+
     legend_bkg_processes = copy.deepcopy(bkg_processes)
     legend_bkg_processes.reverse()
 
@@ -244,7 +249,7 @@ def main(info):
     else:
         plot.subplot(1).setGraphStyle("data_obs", "e0")
 
-    if "mm" not in channel:
+    if "mm" not in channel and not "ee" in channel:
         # get signal histograms
         plot_idx_to_add_signal = [0,2] if args.linear else [1,2]
         for i in plot_idx_to_add_signal:
@@ -291,7 +296,7 @@ def main(info):
             # plot.subplot(i).add_hist(HWW, "HWW")
             # plot.subplot(i).add_hist(HWW, "HWW_top")
 
-    if "mm" not in channel:
+    if "mm" not in channel and "ee" not in channel:
         plot.subplot(0 if args.linear else 1).setGraphStyle(
             "ggH", "hist", linecolor=styles.color_dict["ggH"], linewidth=3)
         plot.subplot(0 if args.linear else 1).setGraphStyle("ggH_top", "hist", linecolor=0)
@@ -310,7 +315,7 @@ def main(info):
 
 
     # assemble ratio
-    if "mm" not in channel:
+    if "mm" not in channel and  "ee" not in channel:
         bkg_ggH = plot.subplot(2).get_hist("ggH")
         bkg_qqH = plot.subplot(2).get_hist("qqH")
         bkg_ggH.Add(plot.subplot(2).get_hist("total_bkg"))
@@ -365,6 +370,10 @@ def main(info):
         plot.subplot(0).setLogY()
         plot.subplot(0).setYlims(1, 10**10)
 
+    if channel == "ee":
+        plot.subplot(0).setLogY()
+        plot.subplot(0).setYlims(1, 10**10)
+
     if args.linear != True:
         plot.subplot(1).setYlims(0.1, split_dict[channel])
         plot.subplot(1).setYlabel(
@@ -400,7 +409,7 @@ def main(info):
         plot.subplot(2).changeXLabels(["0.2", "0.4", "0.6", "0.8", "1.0"])
 
     # draw subplots. Argument contains names of objects to be drawn in corresponding order.
-    if "mm" not in channel:
+    if "mm" not in channel and not "ee" in channel:
         # procs_to_draw = ["stack", "total_bkg", "ggH", "ggH_top", "qqH", "qqH_top", "VH", "VH_top", "ttH", "ttH_top", "data_obs"] if args.linear else ["stack", "total_bkg", "data_obs"]
         procs_to_draw = ["stack", "total_bkg", "ggH", "ggH_top", "qqH", "qqH_top", "data_obs"] if args.linear else ["stack", "total_bkg", "data_obs"]
         if args.draw_jet_fake_variation is not None:
@@ -445,7 +454,7 @@ def main(info):
             plot.legend(i).add_entry(
                 0, process, styles.legend_label_dict[process.replace("TTL", "TT").replace("VVL", "VV").replace("NLO","")], 'f')
         plot.legend(i).add_entry(0, "total_bkg", "Bkg. stat. unc.", 'f')
-        if "mm" not in channel and args.draw_jet_fake_variation is None:
+        if "mm" not in channel and "ee" not in channel and args.draw_jet_fake_variation is None:
             plot.legend(i).add_entry(0 if args.linear else 1, "ggH%s" % suffix[i], "%s #times gg#rightarrowH"%str(int(ggH_scale)), 'l')
             plot.legend(i).add_entry(0 if args.linear else 1, "qqH%s" % suffix[i], "%s #times qq#rightarrowH"%str(int(qqH_scale)), 'l')
             # plot.legend(i).add_entry(0 if args.linear else 1, "VH%s" % suffix[i], "%s #times V(lep)H"%str(int(VH_scale)), 'l')
@@ -461,7 +470,7 @@ def main(info):
         plot.add_legend(
             reference_subplot=2, pos=1, width=0.6, height=0.03)
         plot.legend(i + 2).add_entry(0, "data_obs", "Observed", 'PE2L')
-        if "mm" not in channel and args.draw_jet_fake_variation is None:
+        if "mm" not in channel and "ee" not in channel and args.draw_jet_fake_variation is None:
             plot.legend(i + 2).add_entry(0 if args.linear else 1, "ggH%s" % suffix[i],
                                          "ggH+bkg.", 'l')
             plot.legend(i + 2).add_entry(0 if args.linear else 1, "qqH%s" % suffix[i],

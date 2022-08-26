@@ -130,6 +130,7 @@ def main(args):
     else:
         channel_categories = {
             "mt": ["1", "2", "3", "4", "5", "6", "7"],
+            "ee": ["12", "13"]
         }
 
         signalcats = []
@@ -154,6 +155,8 @@ def main(args):
         "7": "DM0",
         "8": "DM1",
         "9": "DM10_11",
+        "12": "barrel",
+        "13": "endcap",
         "100": "Control Region"
     }
     if args.linear:

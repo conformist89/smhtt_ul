@@ -135,8 +135,12 @@ def get_nominal_datasets(era, channel, friend_directories, files, directory):
             channel,
             channel + "_nominal",
             directory,
-            [fdir for fdir in friend_directories[channel] if filter_friends(key, fdir, channel)],
-            validate_samples=False,
+            [
+                fdir
+                for fdir in friend_directories[channel]
+                if filter_friends(key, fdir, channel)
+            ],
+            validate_samples=True,
         )
     return datasets
 
@@ -152,6 +156,7 @@ def add_tauES_datasets(
     selections,
     categorization,
     additional_emb_procS,
+    shiftstring="EMBtauESshift",
 ):
     for variation in tauESvariations:
         name = str(round(variation, 2)).replace("-", "minus").replace(".", "p")
@@ -167,14 +172,14 @@ def add_tauES_datasets(
             [
                 fdir
                 for fdir in friend_directories[channel]
-                if filter_friends("EMB", fdir)
+                if filter_friends("EMB", fdir, channel)
             ],
             validate_samples=False,
         )
         nominals[era]["datasets"][channel][processname] = dataset
         updated_unit = []
         additional_emb_procS.add(f"emb{name}")
-        shiftname = f"EMBtauESshift_{name}"
+        shiftname = f"{shiftstring}_{name}"
         for category_selection, actions in categorization[channel]:
             full_selection = selections + [category_selection]
             new_selections = deepcopy(full_selection)
@@ -188,7 +193,9 @@ def add_tauES_datasets(
                 for sel_obj in new_selections:
                     for cut in sel_obj.cuts:
                         # now find the intersection between quants and the expression set
-                        for quant in quants & get_quantities_from_expression(cut.expression):
+                        for quant in quants & get_quantities_from_expression(
+                            cut.expression
+                        ):
                             cut.expression = cut.expression.replace(
                                 quant,
                                 "{quant}__{var}".format(quant=quant, var=shiftname),
@@ -197,7 +204,9 @@ def add_tauES_datasets(
                                 f"Replaced {quant} in {cut.expression} ( quant: {quant}, var: {shiftname})"
                             )
                     for weight in sel_obj.weights:
-                        for quant in quants & get_quantities_from_expression(weight.expression):
+                        for quant in quants & get_quantities_from_expression(
+                            weight.expression
+                        ):
                             weight.expression = weight.expression.replace(
                                 quant,
                                 "{quant}__{var}".format(quant=quant, var=shiftname),
@@ -209,9 +218,7 @@ def add_tauES_datasets(
                     for quant in quants & get_quantities_from_expression(act.variable):
                         act.variable = act.variable.replace(
                             quant,
-                            "{quant}__{var}".format(
-                                quant=act.variable, var=shiftname
-                            ),
+                            "{quant}__{var}".format(quant=act.variable, var=shiftname),
                         )
                         logger.debug(
                             f"Replaced action {quant} with {act.variable} ( quant: {quant}, var: {shiftname})"
@@ -221,7 +228,12 @@ def add_tauES_datasets(
 
 
 def book_tauES_histograms(
-    manager, additional_emb_procS, datasets, variations, enable_check=False
+    manager,
+    additional_emb_procS,
+    datasets,
+    variations,
+    shiftstring="EMBtauESshift",
+    enable_check=False,
 ):
     def replace_expression(exp, quants):
         for quant in quants[shiftname]:
@@ -235,12 +247,12 @@ def book_tauES_histograms(
                 )
         return exp
 
-    for tau_es_shift in additional_emb_procS:
-        logger.debug(f"Booking {tau_es_shift}")
-        shiftname = f"EMBtauESshift_{tau_es_shift.replace('emb', '')}"
+    for shift in additional_emb_procS:
+        logger.debug(f"Booking {shift}")
+        shiftname = f"{shiftstring}_{shift.replace('emb', '')}"
         updated_variations = deepcopy(variations)
         final_variations = []
-        unitlist = datasets[tau_es_shift]
+        unitlist = datasets[shift]
         if len(unitlist) == 0:
             continue
         quants = unitlist[0].dataset.quantities_per_vars
