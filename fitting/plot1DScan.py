@@ -487,7 +487,7 @@ axishist.SetMaximum(args.y_max)
 axishist.SetMinimum(0.0)
 
 # axishist.GetYaxis().SetTitle("- 2 #Delta ln #Lambda(%s)" % fixed_name)
-axishist.GetYaxis().SetTitle("#minus2 ln #Lambda (r)")
+axishist.GetYaxis().SetTitle("#minus2 ln #Lambda")
 axishist.GetXaxis().SetTitle("%s" % fixed_name)
 if args.x_title is not None:
     axishist.GetXaxis().SetTitle(args.x_title)
@@ -772,7 +772,7 @@ subtext = 'Own Work}'
 if args.pub:
     subtext = '{#it{LHC} #bf{Run 1}}'
     # subtext = '#it{#splitline{LHC Run 1}{Internal}}'
-plot.DrawCMSLogo(pads[0], 'CMS','#it{Internal}',
+plot.DrawCMSLogo(pads[0], 'CMS','#it{Own Work}',
                   11, 0.045, 0.035, 1.2, '', 0.9 if args.pub else 0.8)
 # plot.DrawCMSLogo(pads[0], '#it{ATLAS}#bf{ and }CMS',
 #                  '#it{LHC Run 1 Internal}', 11, 0.045, 0.035, 1.2)
@@ -864,6 +864,9 @@ else:
 
 legend.AddEntry(main_scan['graph'], "Observed", 'AP')
 legend.Draw()
+
+latex.SetTextSize(0.03)
+latex.DrawLatex(0.77, 0.95, "59.83 fb^{-1} (13 TeV)")
 
 save_graph = main_scan['graph'].Clone()
 save_graph.GetXaxis().SetTitle('%s = %.3f %+.3f/%+.3f' %

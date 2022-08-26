@@ -742,7 +742,7 @@ def main(args):
     tauES_names = []
     if args.special == "TauES":
         # we have to extend the _dataset_map and the _process_map to include the TauES variations
-        tauESvariations = [-2.5 + 0.1 * i for i in range(0, 52)]
+        tauESvariations = [-2.5 + 0.1 * i for i in range(0, 51)]
         for variation in tauESvariations:
             name = str(round(variation, 2)).replace("-", "minus").replace(".", "p")
             processname = f"emb{name}"
@@ -750,6 +750,7 @@ def main(args):
             _dataset_map[processname] = processname
             _process_map[processname] = "Embedded"
     logger.info("Reading inputs from file {}".format(args.input))
+    logger.info("Running special {}".format(args.special))
     for key in input_file.GetListOfKeys():
         logger.debug("Processing histogram %s", key.GetName())
         dataset, selection, variation, variable = key.GetName().split("#")
@@ -929,24 +930,24 @@ def main(args):
                                 doTauES=True,
                             )
                             estimated_hist.Write()
-                            for variation, scale in zip(
-                                [
-                                    "CMS_ff_total_sub_syst_Channel_EraUp",
-                                    "CMS_ff_total_sub_syst_Channel_EraDown",
-                                ],
-                                [0.9, 1.1],
-                            ):
-                                estimated_hist = fake_factor_estimation(
-                                    input_file,
-                                    ch,
-                                    cat,
-                                    var,
-                                    variation=variation,
-                                    sub_scale=scale,
-                                    special=embsignal,
-                                    doTauES=True,
-                                )
-                                estimated_hist.Write()
+                            # for variation, scale in zip(
+                            #     [
+                            #         "CMS_ff_total_sub_syst_Channel_EraUp",
+                            #         "CMS_ff_total_sub_syst_Channel_EraDown",
+                            #     ],
+                            #     [0.9, 1.1],
+                            # ):
+                            #     estimated_hist = fake_factor_estimation(
+                            #         input_file,
+                            #         ch,
+                            #         cat,
+                            #         var,
+                            #         variation=variation,
+                            #         sub_scale=scale,
+                            #         special=embsignal,
+                            #         doTauES=True,
+                            #     )
+                            #     estimated_hist.Write()
                     else:
                         if "scale_t" in variation:
                             continue
@@ -989,7 +990,7 @@ def main(args):
                                 sub_scale=scale,
                             )
                             estimated_hist.Write()
-    if args.special == "tauES":
+    if args.special != "TauES":
         logger.info("Starting estimations for the QCD mulitjet process.")
         logger.debug("%s", json.dumps(qcd_inputs, sort_keys=True, indent=4))
         for channel in qcd_inputs:
@@ -1174,5 +1175,5 @@ def main(args):
 
 if __name__ == "__main__":
     args = parse_args()
-    setup_logging("do_estimations.log", level=logging.DEBUG)
+    setup_logging("do_estimations.log", level=logging.INFO)
     main(args)

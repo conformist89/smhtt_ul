@@ -154,6 +154,8 @@ def main(args):
         "7": "DM0",
         "8": "DM1",
         "9": "DM10_11",
+        "10": "DM10",
+        "11": "DM11",
         "100": "Control Region"
     }
     if args.linear:

@@ -893,6 +893,47 @@ ff_variations_lt = [
     for syst in _ff_variations_lt
 ]
 
+_ff_variations_lt_dm_binned = [
+    "ff2_ff_qcd_syst_{shift}",
+    "ff2_ff_qcd_dm0_njet0_stat_{shift}",
+    "ff2_ff_qcd_dm0_njet1_stat_{shift}",
+    "ff2_ff_w_syst_{shift}",
+    "ff2_ff_w_dm0_njet0_stat_{shift}",
+    "ff2_ff_w_dm0_njet1_stat_{shift}",
+    "ff2_ff_tt_syst_{shift}",
+    "ff2_ff_tt_stat_{shift}",
+    "ff2_ff_tt_morphed_{shift}",
+    "ff2_ff_tt_sf_{shift}",
+    "ff2_ff_frac_w_{shift}",
+    "ff2_ff_w_lepPt_{shift}",
+    "ff2_ff_w_mc_{shift}",
+    "ff2_ff_w_mt_{shift}",
+    "ff2_ff_qcd_mvis_{shift}",
+    "ff2_ff_qcd_muiso_{shift}",
+    "ff2_ff_qcd_mc_{shift}",
+    "ff2_ff_qcd_dm0_njet0_morphed_stat_{shift}",
+    "ff2_ff_qcd_dm0_njet1_morphed_stat_{shift}",
+    "ff2_ff_w_dm0_njet0_morphed_stat_{shift}",
+    "ff2_ff_w_dm0_njet1_morphed_stat_{shift}",
+    "ff2_ff_tt_dm0_njet0_morphed_stat_{shift}",
+    "ff2_ff_tt_dm0_njet1_morphed_stat_{shift}",
+]
+#  Variations on the jet backgrounds estimated with the fake factor method.
+ff_variations_lt_dm_binned = [
+    ReplaceCutAndAddWeight(
+        "anti_iso_CMS_{syst}".format(
+            syst=syst.format(shift=shift.capitalize(), era="Era", ch="Channel_")
+        ),
+        "tau_iso",
+        Cut("id_tau_vsJet_Tight_2<0.5&&id_tau_vsJet_VLoose_2>0.5", "tau_anti_iso"),
+        Weight(
+            "ff2_{syst}".format(syst=syst.format(shift=shift)), "fake_factor"
+        ),
+    )
+    for shift in ["up", "down"]
+    for syst in _ff_variations_lt_dm_binned
+]
+
 # # Propagation of tau ES systematics on jetFakes process
 ff_variations_tau_es_lt = [
     ReplaceVariableReplaceCutAndAddWeight(
