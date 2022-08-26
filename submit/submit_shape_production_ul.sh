@@ -70,7 +70,7 @@ elif [[ "$SUBMIT_MODE" == "singlegraph" ]]; then
             --graph-dir $OUTPUT \
             $CONTROL_ARG
     elif [[ "$SPECIAL" == "EleES" ]]; then
-        PROCESSES="data,emb,zl,zj,ttl,ttj,vvl,vvj,w"
+        PROCESSES="data,emb,ttl,ttt,vvl,vvt,w,zl,ztt"
         PROCESSES=$(sort_string ${PROCESSES#,})
         python shapes/produce_shapes.py --channels $CHANNEL \
             --output-file dummy.root \
