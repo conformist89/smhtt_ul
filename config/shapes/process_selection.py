@@ -152,6 +152,7 @@ def lumi_weight(era):
         raise ValueError("Given era {} not defined.".format(era))
     return ("{} * 1000.0".format(lumi), "lumi")
 
+
 # def Data_base_process_selection(channel, era):
 #     if channel == "tt" and era == "2018":
 #         return Selection(name="", cuts=["((trg_double_tau35_tightiso_tightid==1) || (trg_double_tau40_mediumiso_tightid==1))", "trg_extension"])
@@ -222,7 +223,10 @@ def MC_base_process_selection(channel, era):
         lumi_weight(era),
     ]
     # print("MC_base_process_weights:", [weight for weight in MC_base_process_weights if weight is not None])
-    return Selection(name="MC base", weights=[weight for weight in MC_base_process_weights if weight is not None])
+    return Selection(
+        name="MC base",
+        weights=[weight for weight in MC_base_process_weights if weight is not None],
+    )
 
 
 def dy_stitching_weight(era):
@@ -422,13 +426,19 @@ def ZTT_embedded_process_selection(channel, era):
         ("emb_genweight", "emb_genweight"),
         ("emb_idsel_wgt_1*emb_idsel_wgt_2*emb_triggersel_wgt", "emb_selection_weight"),
     ]
+    ztt_embedded_cuts = [
+        (
+            "((gen_match_1>2 && gen_match_1<6) && (gen_match_2>2 && gen_match_2<6))",
+            "dy_genuine_tau",
+        )
+    ]
     if "mt" in channel:
         ztt_embedded_weights.extend(
             [
                 ("gen_match_1==4 && gen_match_2==5", "emb_veto"),
                 ("iso_wgt_mu_1", "isoweight"),
                 ("id_wgt_mu_1", "idweight"),
-                ("trg_wgtsingle_mu24Ormu27", "trgweight"), # TODO fix naming
+                ("trg_wgtsingle_mu24Ormu27", "trgweight"),  # TODO fix naming
                 # ("((gen_match_2==5)*id_wgt_tau_vsJet_Tight_2 + (gen_match_2!=5))", "taubyIsoIdWeight")
                 # (
                 #     "id_wgt_tau_vsJet_Tight_2",
@@ -446,7 +456,10 @@ def ZTT_embedded_process_selection(channel, era):
                 ("iso_wgt_ele_1", "isoweight"),
                 ("id_wgt_ele_1", "idweight"),
                 ("trg_wgt_single_ele32orele35", "trgweight"),
-                ("((gen_match_2==5)*id_wgt_tau_vsJet_Tight_2 + (gen_match_2!=5))", "taubyIsoIdWeight")
+                (
+                    "((gen_match_2==5)*id_wgt_tau_vsJet_Tight_2 + (gen_match_2!=5))",
+                    "taubyIsoIdWeight",
+                )
                 # (
                 #     "id_wgt_tau_vsJet_Tight_2",
                 #     "taubyIsoIdWeight",
@@ -484,13 +497,22 @@ def ZTT_embedded_process_selection(channel, era):
                 # triggerweight_emb(channel, era),
             ]
         )
-
-    ztt_embedded_cuts = [
-        (
-            "((gen_match_1>2 && gen_match_1<6) && (gen_match_2>2 && gen_match_2<6))",
-            "dy_genuine_tau",
+    elif "mm" in channel:
+        ztt_embedded_weights.extend(
+            [
+                # TODO trigger weights for em
+                ("iso_wgt_mu_1 * iso_wgt_mu_2", "isoweight"),
+                ("id_wgt_mu_1 * id_wgt_mu_2", "idweight"),
+                ("trg_wgtsingle_mu24Ormu27", "trgweight"),
+                # triggerweight_emb(channel, era),
+            ]
         )
-    ]
+        ztt_embedded_cuts = [
+            (
+                "(gen_match_1==2 && gen_match_2==2)",
+                "genuine_dimuon",
+            )
+        ]
 
     return Selection(
         name="Embedded", cuts=ztt_embedded_cuts, weights=ztt_embedded_weights

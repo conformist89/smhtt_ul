@@ -195,6 +195,9 @@ def write_hists_per_category(cat_hists: tuple):
             name_output = name_output.replace("Era", f"Run{args.era}")
         if "Channel" in name_output:
             name_output = name_output.replace("Channel", channel)
+        print(category, name_output)
+        if category == "control_region":
+            name_output = name_output.replace("EMB", "MUEMB")
         hist.SetTitle(name_output)
         hist.SetName(name_output)
         hist.Write()

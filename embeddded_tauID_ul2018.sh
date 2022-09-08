@@ -152,6 +152,8 @@ if [[ $MODE == "SYNC" ]]; then
 
     bash ./shapes/do_estimations.sh 2018 ${shapes_rootfile} 1
 
+    bash ./shapes/do_estimations.sh 2018 ${shapes_rootfile_mm} 1
+
     echo "##############################################################################################"
     echo "#     plotting                                      #"
     echo "##############################################################################################"
@@ -276,20 +278,21 @@ if [[ $MODE == "PLOT-POSTFIT" ]]; then
         FILE=${RESDIR}/postfitshape.root
         FITFILE=${RESDIR}/fitDiagnostics.${ERA}.root
         # create output folder if it does not exist
-        if [ ! -d "output/postfitplots/" ]; then
-            mkdir -p output/postfitplots/${WP}
+        if [ ! -d "output/postfitplots_muemb/" ]; then
+            mkdir -p output/postfitplots_muemb/${WP}
         fi
         echo "[INFO] Postfits plots for category $CATEGORY"
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots/${WP} --prefit
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots/${WP}
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots/${WP} --prefit
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots/${WP}
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb/${WP} --prefit
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb/${WP}
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb/${WP} --prefit
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb/${WP}
     done
     exit 0
 fi
 if [[ $MODE == "PLOT-SF" ]]; then
     source utils/setup_root.sh
-    python3 plotting/plot_TauID_sf.py --input output/$datacard_output/ --output output/postfitplots/ --wp ${WP}
+    echo python3 plotting/plot_TauID_sf.py --input output/$datacard_output/ --output output/postfitplots_muemb/ --wp ${WP}
+    python3 plotting/plot_TauID_sf.py --input output/$datacard_output/ --output output/postfitplots_muemb/ --wp ${WP}
     exit 0
 fi
 

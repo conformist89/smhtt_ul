@@ -356,20 +356,19 @@ def get_analysis_units(
         categorization=categorization,
         channel=channel,
     )
+     # Embedding
+    add_process(
+        analysis_units,
+        name="emb",
+        dataset=datasets["EMB"],
+        selections=[
+            channel_selection(channel, era, special_analysis),
+            ZTT_embedded_process_selection(channel, era),
+        ],
+        categorization=categorization,
+        channel=channel,
+    )
     if channel != "mm":
-        # Embedding
-        add_process(
-            analysis_units,
-            name="emb",
-            dataset=datasets["EMB"],
-            selections=[
-                channel_selection(channel, era, special_analysis),
-                ZTT_embedded_process_selection(channel, era),
-            ],
-            categorization=categorization,
-            channel=channel,
-        )
-
         add_process(
             analysis_units,
             name="ztt",
@@ -818,6 +817,7 @@ def main(args):
             "ttl",
             "vvl",
             "w",
+            "emb"
         }
     logger.info(f"Processes to be computed: {procS}")
     dataS = {"data"} & procS
@@ -865,6 +865,15 @@ def main(args):
                 [same_sign, anti_iso_lt],
                 do_check,
             )
+        elif channel == "mm":
+            book_histograms(
+                um,
+                processes=embS,
+                datasets=nominals[era]["units"][channel],
+                variations=[same_sign],
+                enable_check=do_check,
+            )
+
         else:
             book_histograms(
                 um,
@@ -940,7 +949,7 @@ def main(args):
                 um,
                 processes=procS,
                 datasets=nominals[era]["units"][channel],
-                variations=[],
+                variations=[same_sign],
                 enable_check=do_check,
             )
         ##################################

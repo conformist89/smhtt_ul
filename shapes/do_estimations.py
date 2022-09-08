@@ -235,6 +235,8 @@ def qcd_estimation(
             procs_to_subtract = ["EMB", "ZL", "TTL", "VVL", "W"]
         elif "et" in channel:
             procs_to_subtract = ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
+        elif "mm" in channel:
+            procs_to_subtract = ["EMB", "TTL", "VVL", "W"]
     else:
         procs_to_subtract = [
             "ZTT",
@@ -252,6 +254,8 @@ def qcd_estimation(
             procs_to_subtract = ["ZTT", "ZL", "TTT", "TTL", "VVT", "VVL", "W"]
         elif "et" in channel:
             procs_to_subtract = ["ZTT", "ZL", "TTT", "TTL", "VVT", "VVL"]
+        elif "mm" in channel:
+            procs_to_subtract = ["ZL", "TTL", "VVL", "W"]
 
     logger.debug(
         "Trying to get object {}".format(
@@ -782,7 +786,7 @@ def main(args):
             if "same_sign" in variation:
                 if channel in qcd_inputs:
                     if (
-                        channel in ["et", "mt", "em"]
+                        channel in ["et", "mt", "em", "mm"]
                         or "abcd_same_sign_anti_iso" in variation
                     ):
                         if category in qcd_inputs[channel]:
@@ -937,7 +941,7 @@ def main(args):
                         extrapolation_factor = 1.0
             for var in qcd_inputs[channel][category]:
                 for variation in qcd_inputs[channel][category][var]:
-                    if channel in ["et", "mt"]:
+                    if channel in ["et", "mt", "mm"]:
                         estimated_hist = qcd_estimation(
                             input_file,
                             channel,
@@ -1027,7 +1031,7 @@ def main(args):
                         input_file, channel, category, var, variation=variation
                     )
                     estimated_hist.Write()
-    if args.emb_tt:
+    if args.emb_tt and channel != "mm":
         logger.info("Producing embedding ttbar variations.")
         logger.debug("%s", json.dumps(emb_categories, sort_keys=True, indent=4))
         for channel in emb_categories:

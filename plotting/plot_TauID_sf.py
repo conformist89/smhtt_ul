@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
+# import seaborn as sns
 import mplhep as hep
 import argparse
 import glob
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True  # disable ROOT internal argument parser
-sns.set_style("ticks")
+# sns.set_style("ticks")
 plt.style.use(hep.style.CMS)
 
 
