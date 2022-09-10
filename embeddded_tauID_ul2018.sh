@@ -234,6 +234,8 @@ if [[ $MODE == "FIT" ]]; then
         --algo singles --robustFit 1 \
         --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
         --floatOtherPOIs 1 \
+        --setParameterRanges r=0.7,1.3 \
+        --setParameters r=1.00 \
         -n $ERA -v1 \
         --parallel 1 --there
     for RESDIR in output/$datacard_output/htt_mt_*; do
