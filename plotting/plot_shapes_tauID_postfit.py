@@ -352,7 +352,7 @@ def main(args):
                     )
                 except BaseException:
                     pass
-            plot.legend(i).add_entry(0, "total_bkg", "Bkg. unc.", "f")
+            plot.legend(i).add_entry(0, "model_total", "Bkg. unc.", "f")
             plot.legend(i).add_entry(0, "data_obs", "Data", "PE")
             plot.legend(i).setNColumns(3)
         plot.legend(0).Draw()
@@ -383,7 +383,7 @@ def main(args):
         for i in range(2):
             plot.add_legend(reference_subplot=2, pos=1, width=0.5, height=0.03)
             plot.legend(i + 2).add_entry(0, "data_obs", "Data", "PE")
-            plot.legend(i + 2).add_entry(0, "total_bkg", "Bkg. unc.", "f")
+            plot.legend(i + 2).add_entry(0, "model_total", "Bkg. unc.", "f")
             plot.legend(i + 2).setNColumns(4)
         plot.legend(2).Draw()
         plot.legend(3).setAlpha(0.0)
