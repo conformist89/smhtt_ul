@@ -99,7 +99,7 @@ if [[ $MODE == "CONTROL" ]]; then
     python shapes/produce_shapes.py --channels $CHANNEL \
         --directory $NTUPLES \
         --${CHANNEL}-friend-directory $FRIENDS \
-        --era $ERA --num-processes 2 --num-threads 8 \
+        --era $ERA --num-processes 3 --num-threads 8 \
         --optimization-level 1 --skip-systematic-variations \
         --special-analysis "TauID" \
         --control-plot-set ${VARIABLES} \
@@ -111,7 +111,7 @@ if [[ $MODE == "LOCAL" ]]; then
     python shapes/produce_shapes.py --channels $CHANNEL \
         --directory $NTUPLES \
         --${CHANNEL}-friend-directory $FRIENDS \
-        --era $ERA --num-processes 4 --num-threads 12 \
+        --era $ERA --num-processes 2 --num-threads 12 \
         --optimization-level 1 \
         --special-analysis "TauID" \
         --control-plot-set ${VARIABLES} \
@@ -292,7 +292,8 @@ if [[ $MODE == "PLOT-POSTFIT" ]]; then
     exit 0
 fi
 if [[ $MODE == "PLOT-SF" ]]; then
-    source utils/setup_root.sh
+    # source utils/setup_root.sh
+    source /work/olavoryk/source_files/setup-centOS7-gcc10.sh
     echo python3 plotting/plot_TauID_sf.py --input output/$datacard_output/ --output output/postfitplots_muemb/ --wp ${WP}
     python3 plotting/plot_TauID_sf.py --input output/$datacard_output/ --output output/postfitplots_muemb/ --wp ${WP}
     exit 0
