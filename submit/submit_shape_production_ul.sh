@@ -8,6 +8,7 @@ CONTROL=$5
 NTUPLETAG=$6
 OUTPUT=$7
 SPECIAL=$8
+WP=$9
 
 [[ ! -z $1 && ! -z $2 && ! -z $3 && ! -z $4 && ! -z $5 ]] || (
     echo "[ERROR] Number of given parameters is too small."
@@ -51,6 +52,7 @@ elif [[ "$SUBMIT_MODE" == "singlegraph" ]]; then
             --directory $NTUPLES \
             --$CHANNEL-friend-directory $FRIENDS \
             --era $ERA \
+            --wp $WP \
             --optimization-level 1 \
             --special-analysis "TauID" \
             --process-selection $PROCESSES \
@@ -63,6 +65,7 @@ elif [[ "$SUBMIT_MODE" == "singlegraph" ]]; then
             --directory $NTUPLES \
             --$CHANNEL-friend-directory $FRIENDS \
             --era $ERA \
+            --wp $WP \
             --optimization-level 1 \
             --special-analysis "TauES" \
             --process-selection $PROCESSES \
@@ -75,6 +78,7 @@ elif [[ "$SUBMIT_MODE" == "singlegraph" ]]; then
             --directory $NTUPLES \
             --$CHANNEL-friend-directory $FRIENDS \
             --era $ERA \
+            --wp $WP \
             --optimization-level 1 \
             --process-selection $PROCESSES \
             --only-create-graphs \
