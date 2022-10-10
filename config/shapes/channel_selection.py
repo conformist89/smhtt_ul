@@ -193,6 +193,18 @@ def channel_selection(channel, era, wp, special=None):
         if channel != "mt" and channel != "mm":
             raise ValueError("TauID measurement is only available for mt (with mm control region)")
         if channel == "mt":
+
+            if wp == "vvtight":
+                cuts.extend(
+                    [
+                        ("id_tau_vsMu_Tight_2>0.5", "againstMuonDiscriminator"),
+                        ("id_tau_vsEle_VLoose_2>0.5", "againstElectronDiscriminator"),
+                        ("id_tau_vsJet_VVTight_2>0.5", "tau_iso"),
+                        ("iso_1<0.15", "muon_iso"),
+                        ("pzetamissvis > -25", "pzetamissvis"),
+                        ("mt_1 < 60", "mt_1"),
+                    ]
+                )
             if wp == "vtight":
                 cuts.extend(
                     [
