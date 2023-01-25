@@ -27,10 +27,10 @@ shapes_rootfile_mm=${shapes_output}_mm.root
 shapes_rootfile_synced=${shapes_output_synced}_synced.root
 
 
-categories=("Pt20to25" "Pt25to30" "Pt30to35" "Pt35to40" "Pt40to60" "PtGt60" "DM0" "DM1" "DM10_11" "Inclusive")
-# categories=("Pt20to25")
+# categories=("Pt20to25" "Pt25to30" "Pt30to35" "Pt35to40" "PtGt40" "DM0" "DM1" "DM10_11" "Inclusive")
+categories=("Pt20to25")
 
-out_impacts=impacts_60_rebin
+out_impacts=impacts_output
 
 printf -v categories_string '%s,' "${categories[@]}"
 

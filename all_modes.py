@@ -1,11 +1,15 @@
 import os 
 import argparse
 
-pre_shape_modes = ["CONTROL", "CONTROLREGION", "CONDOR"]
+# pre_shape_modes = ["CONTROL", "CONTROLREGION", "CONDOR"]
 
-post_shape_modes = ["MERGE", "SYNC", "DATACARD", "FIT",
-"POSTFIT", "PLOT-POSTFIT", "PLOT-SF", "JSON"
-]
+pre_shape_modes = ["CONDOR"]
+
+# post_shape_modes = ["MERGE", "SYNC", "DATACARD", "FIT",
+# "POSTFIT", "PLOT-POSTFIT", "PLOT-SF", "JSON"
+# ]
+
+post_shape_modes = ["SYNC"]
 
 
 # CHANNEL=" mt "

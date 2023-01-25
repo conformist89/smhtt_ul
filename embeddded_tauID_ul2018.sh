@@ -4,6 +4,9 @@ ERA=$2
 NTUPLETAG=$3
 TAG=$4
 MODE=$5
+WP=$6
+VS_ELE_WP=$7
+DEEP_TAU=$8
 
 VARIABLES="m_vis"
 POSTFIX="-ML"
@@ -29,6 +32,7 @@ echo "KINGMAKER_BASEDIR: $KINGMAKER_BASEDIR"
 echo "BASEDIR: ${BASEDIR}"
 echo "output_shapes: ${output_shapes}"
 echo "FRIENDS: ${FRIENDS}"
+echo "XSEC: ${XSEC_FRIENDS}"
 
 categories=("Pt20to25" "Pt25to30" "Pt30to35" "PtGt40" "DM0" "DM1" "DM10_11" "Inclusive")
 printf -v categories_string '%s,' "${categories[@]}"
@@ -101,23 +105,29 @@ if [[ $MODE == "CONTROL" ]]; then
         --${CHANNEL}-friend-directory $FRIENDS \
         --era $ERA --num-processes 3 --num-threads 8 \
          --wp $WP \
+        --vs_ele_wp ${VS_ELE_WP} \
         --optimization-level 1 --skip-systematic-variations \
         --special-analysis "TauID" \
         --control-plot-set ${VARIABLES} \
         --output-file $shapes_output
 fi
 
+PROCESSES="emb"
+number="_emb_1"
 if [[ $MODE == "LOCAL" ]]; then
     source utils/setup_root.sh
     python shapes/produce_shapes.py --channels $CHANNEL \
         --directory $NTUPLES \
         --${CHANNEL}-friend-directory $FRIENDS \
-        --era $ERA --num-processes 2 --num-threads 12 \
+        --era $ERA --num-processes 2 --num-threads 14 \
          --wp $WP \
+        --vs_ele_wp ${VS_ELE_WP} \
         --optimization-level 1 \
         --special-analysis "TauID" \
+         --process-selection $PROCESSES \
         --control-plot-set ${VARIABLES} \
-        --output-file $shapes_output
+        --optimization-level 1 \
+        --output-file $shapes_output$number
 fi
 
 if [[ $MODE == "CONTROLREGION" ]]; then
@@ -127,6 +137,7 @@ if [[ $MODE == "CONTROLREGION" ]]; then
         --mm-friend-directory $XSEC_FRIENDS \
         --era $ERA --num-processes 3 --num-threads 9 \
          --wp $WP \
+        --vs_ele_wp ${VS_ELE_WP} \
         --optimization-level 1 --skip-systematic-variations \
         --special-analysis "TauID" \
         --output-file "${shapes_output}_mm"
@@ -138,7 +149,7 @@ if [[ $MODE == "CONDOR" ]]; then
     echo "[INFO] Running on Condor"
     echo "[INFO] Condor output folder: ${CONDOR_OUTPUT}"
     bash submit/submit_shape_production_ul.sh $ERA $CHANNEL \
-        "singlegraph" $TAG 0 $NTUPLETAG $CONDOR_OUTPUT "TauID" $WP
+        "singlegraph" $TAG 0 $NTUPLETAG $CONDOR_OUTPUT "TauID" $WP $VS_ELE_WP
     echo "[INFO] Jobs submitted"
 fi
 if [[ $MODE == "MERGE" ]]; then
@@ -230,6 +241,41 @@ if [[ $MODE == "DATACARD" ]]; then
     exit 0
 fi
 
+pt_category="PtGt40"
+if [[ $MODE == "DATACARD_COMB" ]]; then
+    source utils/setup_cmssw.sh
+    # # inputfile
+    inputfile="htt_${CHANNEL}.inputs-sm-Run${ERA}${POSTFIX}.root"
+    # # for category in "pt_binned" "inclusive" "dm_binned"
+    $CMSSW_BASE/bin/slc7_amd64_gcc700/MorphingTauID2017 \
+        --base_path=$PWD \
+        --input_folder_mt=$shapes_output_synced \
+        --input_folder_mm=$shapes_output_synced \
+        --real_data=true \
+        --classic_bbb=false \
+        --binomial_bbb=false \
+        --jetfakes=0 \
+        --embedding=1 \
+        --verbose=true \
+        --postfix=$POSTFIX \
+        --use_control_region=true \
+        --auto_rebin=true \
+        --categories=${pt_category} \
+        --era=$ERA \
+        --output=$datacard_output
+    THIS_PWD=${PWD}
+    echo $THIS_PWD
+    cd output/$datacard_output/
+    for FILE in htt_mt_${pt_category}/*.txt; do
+        sed -i '$s/$/\n * autoMCStats 0.0/' $FILE
+    done
+    cd $THIS_PWD
+
+    echo "[INFO] Create Workspace for datacard"
+    combineTool.py -M T2W -i output/$datacard_output/htt_mt_${pt_category}/ -o workspace.root --parallel 4 -m 125
+    exit 0
+fi
+
 if [[ $MODE == "FIT" ]]; then
     source utils/setup_cmssw.sh
     # --setParameterRanges CMS_htt_doublemutrg_Run${ERA}=$RANGE \
@@ -237,8 +283,8 @@ if [[ $MODE == "FIT" ]]; then
         --algo singles --robustFit 1 \
         --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
         --floatOtherPOIs 1 \
-        --setParameterRanges r=0.7,1.3 \
-        --setParameters r=1.00 \
+        # --setParameterRanges r=0.7,1.3 \
+        # --setParameters r=1.00 \
         -n $ERA -v1 \
         --parallel 1 --there
     for RESDIR in output/$datacard_output/htt_mt_*; do
@@ -249,51 +295,92 @@ if [[ $MODE == "FIT" ]]; then
     exit 0
 fi
 
+if [[ $MODE == "MULTIFIT" ]]; then
+    source utils/setup_cmssw.sh
+
+    combineTool.py -M T2W -i /work/olavoryk/DT25_smhtt/smhtt_ul/output/datacards/2022_07_v6-try_no_qqh_shape_v1/2018_tauid_medium/cmb/ \
+                   -o out_multidim.root \
+                   --parallel 8 -m 125 \
+                   -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel \
+                    --PO '"map=^.*/EMB_Pt20to25:r_EMB_Pt20to25[1,0,2]"' \
+                    --PO '"map=^.*/EMB_Pt25to30:r_EMB_Pt25to30[1,0,2]"' \
+                    --PO '"map=^.*/EMB_Pt30to35:r_EMB_Pt30to35[1,0,2]"' \
+                    --PO '"map=^.*/EMB_Pt35to40:r_EMB_Pt35to40[1,0,2]"' \
+                    --PO '"map=^.*/EMB_PtGt40:r_EMB_PtGt40[1,0,2]"' 
+
+
+    combineTool.py \
+        -n .multidim_pt_fit \
+        -M MultiDimFit\
+        -m 125 -d /work/olavoryk/DT25_smhtt/smhtt_ul/output/datacards/2022_07_v6-try_no_qqh_shape_v1/2018_tauid_medium/cmb/out_multidim.root \
+        --algo singles \
+        --robustFit 1 \
+        --X-rtd MINIMIZER_analytic \
+        --cminDefaultMinimizerStrategy 0 \
+        --floatOtherPOIs 1 \
+        --expectSignal 1 \
+        -v1 
+
+
+
+        FITFILE=/work/olavoryk/DT25_smhtt/smhtt_ul/higgsCombine.multidim_pt_fit.MultiDimFit.mH125.root
+        python datacards/print_fitresult.py ${FITFILE}
+
+    exit 0
+fi
+
 if [[ $MODE == "POSTFIT" ]]; then
     source utils/setup_cmssw.sh
-    for RESDIR in output/$datacard_output/htt_mt_*; do
-        WORKSPACE=${RESDIR}/workspace.root
-        echo "[INFO] Printing fit result for category $(basename $RESDIR)"
-        FILE=${RESDIR}/postfitshape.root
-        FITFILE=${RESDIR}/fitDiagnostics.${ERA}.root
-        combine \
-            -n .$ERA \
-            -M FitDiagnostics \
-            -m 125 -d $WORKSPACE \
-            --robustFit 1 -v1 \
-            --robustHesse 1 \
-            --X-rtd MINIMIZER_analytic \
-            --cminDefaultMinimizerStrategy 0
-        mv fitDiagnostics.2018.root $FITFILE
-        echo "[INFO] Building Prefit/Postfit shapes"
-        PostFitShapesFromWorkspace -w ${WORKSPACE} \
-            -m 125 -d ${RESDIR}/combined.txt.cmb \
-            -o ${FILE} \
-            -f ${FITFILE}:fit_s --postfit
-    done
+
+    WORKSPACE=/work/olavoryk/DT25_smhtt/smhtt_ul/output/datacards/2022_07_v6-try_no_qqh_shape_v1/2018_tauid_medium/cmb/out_multidim.root
+    echo "[INFO] Printing fit result for category $(basename $RESDIR)"
+    FILE=output/$datacard_output/cmb/postfitshape.root
+    FITFILE=output/$datacard_output/cmb/fitDiagnostics.${ERA}.root
+    combine \
+        -n .$ERA \
+        -M FitDiagnostics \
+        -m 125 -d $WORKSPACE \
+        --robustFit 1 -v1 \
+        --robustHesse 1 \
+        --X-rtd MINIMIZER_analytic \
+        --cminDefaultMinimizerStrategy 0
+    mv fitDiagnostics.2018.root $FITFILE
+    echo "[INFO] Building Prefit/Postfit shapes"
+    PostFitShapesFromWorkspace -w ${WORKSPACE} \
+        -m 125 -d /work/olavoryk/DT25_smhtt/smhtt_ul/output/datacards/2022_07_v6-try_no_qqh_shape_v1/2018_tauid_medium/cmb/combined.txt.cmb \
+        -o ${FILE} \
+        -f ${FITFILE}:fit_s --postfit
+
     exit 0
 fi
 
-if [[ $MODE == "PLOT-POSTFIT" ]]; then
+if [[ $MODE == "PLOT-MULTIPOSTFIT" ]]; then
     source utils/setup_root.sh
-    for RESDIR in output/$datacard_output/htt_mt_*; do
-        WORKSPACE=${RESDIR}/workspace.root
 
-        CATEGORY=$(basename $RESDIR)
-        FILE=${RESDIR}/postfitshape.root
-        FITFILE=${RESDIR}/fitDiagnostics.${ERA}.root
+    # fit_categories=("Pt20to25" "Pt25to30" "Pt30to35" "PtGt40")
+    fit_categories=("Pt30to35")
+
+
+    for RESDIR in "${fit_categories[@]}" 
+      do
+        WORKSPACE=/work/olavoryk/DT25_smhtt/smhtt_ul/output/datacards/2022_07_v6-try_no_qqh_shape_v1/2018_tauid_medium/cmb/out_multidim.root
+
+        CATEGORY=$RESDIR
+        FILE=/work/olavoryk/DT25_smhtt/smhtt_ul/output/datacards/2022_07_v6-try_no_qqh_shape_v1/2018_tauid_medium/cmb/postfitshape.root
+        FITFILE=/work/olavoryk/DT25_smhtt/smhtt_ul/output/datacards/2022_07_v6-try_no_qqh_shape_v1/2018_tauid_medium/cmb/fitDiagnostics.${ERA}.root
         # create output folder if it does not exist
-        if [ ! -d "output/postfitplots_muemb_${TAG}/" ]; then
-            mkdir -p output/postfitplots_muemb_${TAG}/${WP}
+        if [ ! -d "output/postfitplots_muemb_${TAG}_multifit/" ]; then
+            mkdir -p output/postfitplots_muemb_${TAG}_multifit/${WP}
         fi
         echo "[INFO] Postfits plots for category $CATEGORY"
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb_${TAG}/${WP} --prefit
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb_${TAG}/${WP}
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb_${TAG}/${WP} --prefit
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb_${TAG}/${WP}
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb_${TAG}_multifit/${WP} --prefit
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb_${TAG}_multifit/${WP}
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb_${TAG}_multifit/${WP} --prefit
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb_${TAG}_multifit/${WP}
     done
     exit 0
 fi
+
 if [[ $MODE == "PLOT-SF" ]]; then
     # source utils/setup_root.sh
     source /work/olavoryk/source_files/setup-centOS7-gcc10.sh
@@ -304,7 +391,7 @@ fi
 
 if [[ $MODE == "IMPACTS" ]]; then
     source utils/setup_cmssw.sh
-    WORKSPACE=output/$datacard_output/htt_mt_Inclusive/workspace.root
+    WORKSPACE=/work/olavoryk/DT25_smhtt/smhtt_ul/output/datacards/2022_07_v6-try_no_qqh_shape_v1/2018_tauid_medium/cmb/out_multidim.root
     combineTool.py -M Impacts -d $WORKSPACE -m 125 \
                 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
                 --doInitialFit --robustFit 1 \
@@ -315,8 +402,8 @@ if [[ $MODE == "IMPACTS" ]]; then
                 --robustFit 1 --doFits \
                 --parallel 16
 
-    combineTool.py -M Impacts -d $WORKSPACE -m 125 -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts.json
-    plotImpacts.py -i tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts.json -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts
+    combineTool.py -M Impacts -d $WORKSPACE -m 125 -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts_multifit.json
+    plotImpacts.py -i tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts_multifit.json -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts_multifit
     # cleanup the fit files
     rm higgsCombine*.root
     exit 0

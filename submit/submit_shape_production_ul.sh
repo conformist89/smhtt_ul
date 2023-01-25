@@ -26,16 +26,23 @@ source utils/setup_ul_samples.sh $NTUPLETAG $ERA
 source utils/setup_root.sh
 source utils/bashFunctionCollection.sh
 
-PROCESSES="data,emb,ztt,zl,zj,ttt,ttl,ttj,vvt,vvl,vvj,w,ggh,qqh,zh,wh"
+# PROCESSES="data,emb,ztt,zl,zj,ttt,ttl,ttj,vvt,vvl,vvj,w,ggh,qqh,zh,wh" 
+PROCESSES="data,emb,ztt,zl,zj,ttt,ttl,ttj,vvt,vvl,vvj,w,zh,wh" # eliminate qqh and ggh
+
+# PROCESSES="emb" # eliminate qqh and ggh
+
 
 
 for PROC in ${PROCS_ARR[@]}; do
     if [[ "$PROC" =~ "backgrounds" ]]; then
         # BKG_PROCS="data,emb,ztt,zl,zj,ttt,ttl,ttj,vvt,vvl,vvj,w"
-        PROCESSES="data,emb,ztt,zl,zj,ttt,ttl,ttj,vvt,vvl,vvj,w"
+        PROCESSES="data,emb,ztt,zl,zj,ttt,ttl,ttj,vvt,vvl,vvj,w" #eliminate qqh and ggh
+
+        # PROCESSES="emb"
     elif [[ "$PROC" =~ "sm_signals" ]]; then
         # SIG_PROCS="ggh,qqh,zh,wh,tth,gghww,qqhww,whww,zhww"
-        PROCESSES="ggh,qqh,zh,wh"
+        # PROCESSES="ggh,qqh,zh,wh"
+        PROCESSES="zh,wh" # eliminate qqh and ggh
     else
         echo "[INFO] Add selection of single process $PROC"
         PROCESSES="$PROCESSES,$PROC"

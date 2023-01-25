@@ -448,28 +448,28 @@ def get_analysis_units(
             categorization=categorization,
             channel=channel,
         )
-        add_process(
-            analysis_units,
-            name="ggh",
-            dataset=datasets["ggH"],
-            selections=[
-                channel_selection(channel, era, wp, vs_ele_wp, special_analysis),
-                ggH125_process_selection(channel, era, wp),
-            ],
-            categorization=categorization,
-            channel=channel,
-        )
-        add_process(
-            analysis_units,
-            name="qqh",
-            dataset=datasets["qqH"],
-            selections=[
-                channel_selection(channel, era, wp, vs_ele_wp, special_analysis),
-                qqH125_process_selection(channel, era, wp),
-            ],
-            categorization=categorization,
-            channel=channel,
-        )
+        # add_process(
+        #     analysis_units,
+        #     name="ggh",
+        #     dataset=datasets["ggH"],
+        #     selections=[
+        #         channel_selection(channel, era, wp, vs_ele_wp, special_analysis),
+        #         ggH125_process_selection(channel, era, wp),
+        #     ],
+        #     categorization=categorization,
+        #     channel=channel,
+        # )
+        # add_process(
+        #     analysis_units,
+        #     name="qqh",
+        #     dataset=datasets["qqH"],
+        #     selections=[
+        #         channel_selection(channel, era, wp, vs_ele_wp, special_analysis),
+        #         qqH125_process_selection(channel, era, wp),
+        #     ],
+        #     categorization=categorization,
+        #     channel=channel,
+        # )
         add_process(
             analysis_units,
             name="wh",
@@ -677,30 +677,30 @@ def get_control_units(channel, era, wp,vs_ele_wp, datasets, special_analysis):
         binning=control_binning,
         variables=variable_set,
     )
-    add_control_process(
-        control_units,
-        name="qqh",
-        dataset=datasets["qqH"],
-        selections=[
-            channel_selection(channel, era, wp, vs_ele_wp, special_analysis),
-            qqH125_process_selection(channel, era, wp),
-        ],
-        channel=channel,
-        binning=control_binning,
-        variables=variable_set,
-    )
-    add_control_process(
-        control_units,
-        name="ggh",
-        dataset=datasets["ggH"],
-        selections=[
-            channel_selection(channel, era, wp, vs_ele_wp, special_analysis),
-            ggH125_process_selection(channel, era, wp),
-        ],
-        channel=channel,
-        binning=control_binning,
-        variables=variable_set,
-    )
+    # add_control_process(
+    #     control_units,
+    #     name="qqh",
+    #     dataset=datasets["qqH"],
+    #     selections=[
+    #         channel_selection(channel, era, wp, vs_ele_wp, special_analysis),
+    #         qqH125_process_selection(channel, era, wp),
+    #     ],
+    #     channel=channel,
+    #     binning=control_binning,
+    #     variables=variable_set,
+    # )
+    # add_control_process(
+    #     control_units,
+    #     name="ggh",
+    #     dataset=datasets["ggH"],
+    #     selections=[
+    #         channel_selection(channel, era, wp, vs_ele_wp, special_analysis),
+    #         ggH125_process_selection(channel, era, wp),
+    #     ],
+    #     channel=channel,
+    #     binning=control_binning,
+    #     variables=variable_set,
+    # )
 
     if channel != "et":
         add_control_process(
@@ -808,8 +808,8 @@ def main(args):
             "vvl",
             "vvj",
             "w",
-            "ggh",
-            "qqh",
+            # "ggh",
+            # "qqh",
             "zh",
             "wh",
         }
