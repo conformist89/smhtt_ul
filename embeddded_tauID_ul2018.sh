@@ -277,7 +277,7 @@ if [[ $MODE == "DATACARD_COMB" ]]; then
         THIS_PWD=${PWD}
         echo $THIS_PWD
         cd output/$datacard_output/
-        for FILE in htt_mt_${pt_cat}/*.txt; do
+        for FILE in output/$datacard_output/cmb/*.txt; do
             sed -i '$s/$/\n * autoMCStats 0.0/' $FILE
         done
         cd $THIS_PWD
