@@ -1,15 +1,14 @@
 import os 
 import argparse
 
-# pre_shape_modes = ["CONTROL", "CONTROLREGION", "CONDOR"]
+pre_shape_modes = ["CONTROL", "CONTROLREGION", "CONDOR"]
 
-pre_shape_modes = ["CONDOR"]
 
 # post_shape_modes = ["MERGE", "SYNC", "DATACARD", "FIT",
 # "POSTFIT", "PLOT-POSTFIT", "PLOT-SF", "JSON"
 # ]
 
-post_shape_modes = ["SYNC"]
+post_shape_modes = ["IMPACTS"]
 
 
 # CHANNEL=" mt "
@@ -28,10 +27,9 @@ parser.add_argument("--wp_ele", type=str, default="loose", help="VS ELE discrimi
 parser.add_argument("--dt", type=str, default="2_1", help="Deep Tau version")
 
 
-
 args = parser.parse_args()
 
-mode = []
+
 
 if args.mode=="pre-shape":
     mode = pre_shape_modes

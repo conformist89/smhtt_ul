@@ -206,6 +206,12 @@ files = {
                 "W": [
                     "WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIISummer20UL18NanoAODv9-106X",
                 ],
+                "EMB": [
+                    "MuonEmbedding_Run2018A-UL2018",
+                    "MuonEmbedding_Run2018B-UL2018",
+                    "MuonEmbedding_Run2018C-UL2018",
+                    "MuonEmbedding_Run2018D-UL2018",
+                ]
             },
         ),
     },
