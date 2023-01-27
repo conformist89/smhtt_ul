@@ -18,7 +18,7 @@ ulimit -s unlimited
 source utils/setup_ul_samples.sh $NTUPLETAG $ERA
 
 # Datacard Setup
-
+WP="medium"
 datacard_output="datacards/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
 
 output_shapes="tauid_shapes-${WP}-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}"
@@ -277,7 +277,7 @@ if [[ $MODE == "DATACARD_COMB" ]]; then
         THIS_PWD=${PWD}
         echo $THIS_PWD
         cd output/$datacard_output/
-        for FILE in output/$datacard_output/cmb/*.txt; do
+        for FILE in cmb/*.txt; do
             sed -i '$s/$/\n * autoMCStats 0.0/' $FILE
         done
         cd $THIS_PWD
@@ -326,11 +326,11 @@ if [[ $MODE == "MULTIFIT" ]]; then
                 -o out_multidim.root \
                 --parallel 8 -m 125 \
                 -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel \
-                --PO '"map=^.*/EMB_Pt20to25:r_EMB_Pt20to25[1,0,2]"' \
-                --PO '"map=^.*/EMB_Pt25to30:r_EMB_Pt25to30[1,0,2]"' \
-                --PO '"map=^.*/EMB_Pt30to35:r_EMB_Pt30to35[1,0,2]"' \
-                --PO '"map=^.*/EMB_Pt35to40:r_EMB_Pt35to40[1,0,2]"' \
-                --PO '"map=^.*/EMB_PtGt40:r_EMB_PtGt40[1,0,2]"' 
+                --PO '"map=^.*/EMB_Pt20to25:r_EMB_Pt20to25[1,0.8,1.3]"' \
+                --PO '"map=^.*/EMB_Pt25to30:r_EMB_Pt25to30[1,0.8,1.3]"' \
+                --PO '"map=^.*/EMB_Pt30to35:r_EMB_Pt30to35[1,0.8,1.3]"' \
+                --PO '"map=^.*/EMB_Pt35to40:r_EMB_Pt35to40[1,0.8,1.3]"' \
+                --PO '"map=^.*/EMB_PtGt40:r_EMB_PtGt40[1,0.8,1.2]"' 
 
 
     # combineTool.py \
@@ -481,3 +481,4 @@ if [[ $MODE == "JSON" ]]; then
     python3 friends/create_xpog_json.py  --wp $WP --user_out_tag $TAG --era $ERA --channel $CHANNEL --input output/$datacard_output/ 
     exit 0
 fi
+
