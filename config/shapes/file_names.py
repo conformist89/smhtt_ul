@@ -111,7 +111,7 @@ files = {
                     "SingleMuon_Run2018D-UL2018",
                 ],
                 "EMB": [
-                    # "TauEmbedding-MuTauFinalState_Run2018A-UL2018",
+                    "TauEmbedding-MuTauFinalState_Run2018A-UL2018",
                     "TauEmbedding-MuTauFinalState_Run2018B-UL2018",
                     "TauEmbedding-MuTauFinalState_Run2018C-UL2018",
                     "TauEmbedding-MuTauFinalState_Run2018D-UL2018",
