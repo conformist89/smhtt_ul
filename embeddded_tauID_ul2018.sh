@@ -296,10 +296,8 @@ if [[ $MODE == "FIT" ]]; then
         --algo singles --robustFit 1 \
         --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
         --floatOtherPOIs 1 \
-        # --setParameterRanges r=0.7,1.3 \
-        # --setParameters r=1.00 \
         -n $ERA -v1 \
-        --parallel 1 --there
+        --parallel 1 --there --robustHesse 1
     for RESDIR in output/$datacard_output/htt_mt_*; do
         echo "[INFO] Printing fit result for category $(basename $RESDIR)"
         FITFILE=${RESDIR}/higgsCombine${ERA}.MultiDimFit.mH125.root
@@ -355,7 +353,7 @@ if [[ $MODE == "MULTIFIT" ]]; then
         --cminDefaultMinimizerStrategy 0 \
         --floatOtherPOIs 1 \
         --expectSignal 1 \
-        -v1 
+        -v1 --robustHesse 1
 
 
 
@@ -480,5 +478,15 @@ if [[ $MODE == "JSON" ]]; then
     source utils/setup_root.sh
     python3 friends/create_xpog_json.py  --wp $WP --user_out_tag $TAG --era $ERA --channel $CHANNEL --input output/$datacard_output/ 
     exit 0
+fi
+
+
+if [[ $MODE == "POI_CORRELATION" ]]; then
+    source utils/setup_root.sh
+    FITFILE=output/$datacard_output/cmb/fitDiagnostics.${ERA}.root
+    
+    # python corr_plot.py $ERA $FITFILE
+    python corr_poi_version0.py $ERA $FITFILE
+
 fi
 
