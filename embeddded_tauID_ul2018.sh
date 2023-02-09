@@ -143,7 +143,7 @@ if [[ $MODE == "CONDOR" ]]; then
     echo "[INFO] Running on Condor"
     echo "[INFO] Condor output folder: ${CONDOR_OUTPUT}"
     bash submit/submit_shape_production_ul.sh $ERA $CHANNEL \
-        "singlegraph" $TAG 0 $NTUPLETAG $CONDOR_OUTPUT "TauID" $WP
+        "singlegraph" $TAG 0 $NTUPLETAG $CONDOR_OUTPUT "TauID" $WP $VS_ELE_WP
     echo "[INFO] Jobs submitted"
 fi
 if [[ $MODE == "MERGE" ]]; then
