@@ -18,7 +18,7 @@ ulimit -s unlimited
 source utils/setup_ul_samples.sh $NTUPLETAG $ERA
 
 # Datacard Setup
-WP="medium"
+
 datacard_output="datacards/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
 
 output_shapes="tauid_shapes-${WP}-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}"
