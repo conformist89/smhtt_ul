@@ -5,7 +5,7 @@ ERA=$2
 
 # KINGMAKER_BASEDIR="/storage/gridka-nrg/sbrommer/CROWN/ntuples/${NTUPLETAG}/CROWNRun/"
 # KINGMAKER_BASEDIR_XROOTD="root://cmsxrootd-kit.gridka.de//store/user/sbrommer/CROWN/ntuples/${NTUPLETAG}/CROWNRun/"
-BASEDIR="/ceph/olavoryk/smhtt/2022_07_v6/ntuples" #my ceph
+BASEDIR="/storage/9/olavoryk/smhtt/2022_07_v6/ntuples" #my ceph
 # BASEDIR="/ceph/sbrommer/smhtt_ul/2022_07_v6/ntuples" # sebastians ceph
 NTUPLES_2016="$BASEDIR"
 # SVFit_Friends_2016="$BASEDIR/2016/friends/SVFit/"
