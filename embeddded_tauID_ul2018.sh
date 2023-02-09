@@ -4,6 +4,9 @@ ERA=$2
 NTUPLETAG=$3
 TAG=$4
 MODE=$5
+WP=$6
+VS_ELE_WP=$7
+DEEP_TAU=$8
 
 VARIABLES="m_vis"
 POSTFIX="-ML"
@@ -11,7 +14,6 @@ ulimit -s unlimited
 source utils/setup_ul_samples.sh $NTUPLETAG $ERA
 
 # Datacard Setup
-WP="medium"
 datacard_output="datacards/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
 
 output_shapes="tauid_shapes-${WP}-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}"
@@ -101,6 +103,7 @@ if [[ $MODE == "CONTROL" ]]; then
         --${CHANNEL}-friend-directory $FRIENDS \
         --era $ERA --num-processes 3 --num-threads 8 \
          --wp $WP \
+         --vs_ele_wp ${VS_ELE_WP} \
         --optimization-level 1 --skip-systematic-variations \
         --special-analysis "TauID" \
         --control-plot-set ${VARIABLES} \
@@ -114,6 +117,7 @@ if [[ $MODE == "LOCAL" ]]; then
         --${CHANNEL}-friend-directory $FRIENDS \
         --era $ERA --num-processes 2 --num-threads 12 \
          --wp $WP \
+         --vs_ele_wp ${VS_ELE_WP} \
         --optimization-level 1 \
         --special-analysis "TauID" \
         --control-plot-set ${VARIABLES} \
@@ -127,6 +131,7 @@ if [[ $MODE == "CONTROLREGION" ]]; then
         --mm-friend-directory $XSEC_FRIENDS \
         --era $ERA --num-processes 3 --num-threads 9 \
          --wp $WP \
+         --vs_ele_wp ${VS_ELE_WP} \
         --optimization-level 1 --skip-systematic-variations \
         --special-analysis "TauID" \
         --output-file "${shapes_output}_mm"
