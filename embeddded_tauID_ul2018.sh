@@ -486,7 +486,7 @@ if [[ $MODE == "POI_CORRELATION" ]]; then
     FITFILE=output/$datacard_output/cmb/fitDiagnostics.${ERA}.root
     
     # python corr_plot.py $ERA $FITFILE
-    python corr_poi_version0.py $ERA $FITFILE
+    python corr_poi_multifit.py $ERA $FITFILE
 
 fi
 
