@@ -21,6 +21,8 @@ source utils/setup_ul_samples.sh $NTUPLETAG $ERA
 
 datacard_output="datacards/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
 
+datacard_output_dm="datacards_dm/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
+
 output_shapes="tauid_shapes-${WP}-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}"
 CONDOR_OUTPUT=output/condor_shapes/${WP}-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}
 shapes_output=output/${WP}-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}/${output_shapes}
@@ -289,6 +291,46 @@ if [[ $MODE == "DATACARD_COMB" ]]; then
     exit 0
 fi
 
+dm_categories=("DM0" "DM1" "DM10_11")
+if [[ $MODE == "DATACARD_DM" ]]; then
+    source utils/setup_cmssw.sh
+    # # inputfile
+
+    for dm_cat in "${dm_categories[@]}"
+    do
+        inputfile="htt_${CHANNEL}.inputs-sm-Run${ERA}${POSTFIX}.root"
+        # # for category in "pt_binned" "inclusive" "dm_binned"
+        $CMSSW_BASE/bin/slc7_amd64_gcc700/MorphingTauID2017 \
+            --base_path=$PWD \
+            --input_folder_mt=$shapes_output_synced \
+            --input_folder_mm=$shapes_output_synced \
+            --real_data=true \
+            --classic_bbb=false \
+            --binomial_bbb=false \
+            --jetfakes=0 \
+            --embedding=1 \
+            --verbose=true \
+            --postfix=$POSTFIX \
+            --use_control_region=true \
+            --auto_rebin=true \
+            --categories=${dm_cat} \
+            --era=$ERA \
+            --output=$datacard_output_dm
+        THIS_PWD=${PWD}
+        echo $THIS_PWD
+        cd output/$datacard_output_dm/
+        for FILE in cmb/*.txt; do
+            sed -i '$s/$/\n * autoMCStats 0.0/' $FILE
+        done
+        cd $THIS_PWD
+
+        echo "[INFO] Create Workspace for datacard"
+        combineTool.py -M T2W -i output/$datacard_output_dm/htt_mt_${dm_cat}/ -o workspace_dm.root --parallel 4 -m 125
+    done
+
+    exit 0
+fi
+
 if [[ $MODE == "FIT" ]]; then
     source utils/setup_cmssw.sh
     # --setParameterRanges CMS_htt_doublemutrg_Run${ERA}=$RANGE \
@@ -366,6 +408,42 @@ if [[ $MODE == "MULTIFIT" ]]; then
     exit 0
 fi
 
+
+if [[ $MODE == "MULTIFIT_DM" ]]; then
+    source utils/setup_cmssw.sh
+
+    combineTool.py -M T2W -i output/$datacard_output_dm/cmb \
+                -o out_multidim_dm.root \
+                --parallel 8 -m 125 \
+                -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel \
+                --PO '"map=^.*/EMB_DM0:r_EMB_DM_0[1,0.8,1.3]"' \
+                --PO '"map=^.*/EMB_DM1:r_EMB_DM_1[1,0.8,1.3]"' \
+                --PO '"map=^.*/EMB_DM10_11:r_EMB_DM_10_11[1,0.8,1.3]"'  
+
+
+        combineTool.py \
+        -n .multidim_dm_fit \
+        -M MultiDimFit\
+        -m 125 -d output/$datacard_output_dm/cmb/out_multidim_dm.root \
+        --algo singles \
+        --robustFit 1 \
+        --X-rtd MINIMIZER_analytic \
+        --cminDefaultMinimizerStrategy 0 \
+        --floatOtherPOIs 1 \
+        --expectSignal 1 \
+        -v1 --robustHesse 1
+
+
+
+        FITFILE=higgsCombine.multidim_dm_fit.MultiDimFit.mH125.root
+        mv $FITFILE output/$datacard_output_dm/cmb/
+        python datacards/print_fitresult.py output/$datacard_output_dm/cmb/${FITFILE}
+
+        
+
+    exit 0
+fi
+
 if [[ $MODE == "POSTFIT" ]]; then
     source utils/setup_cmssw.sh
 
@@ -386,6 +464,33 @@ if [[ $MODE == "POSTFIT" ]]; then
     echo "[INFO] Building Prefit/Postfit shapes"
     PostFitShapesFromWorkspace -w ${WORKSPACE} \
         -m 125 -d output/$datacard_output/cmb/combined.txt.cmb \
+        -o ${FILE} \
+        -f ${FITFILE}:fit_s --postfit
+
+    exit 0
+fi
+
+
+if [[ $MODE == "POSTFIT_DM" ]]; then
+    source utils/setup_cmssw.sh
+
+    # WORKSPACE=/work/olavoryk/DT25_smhtt/smhtt_ul/output/datacards/2022_07_v6-try_no_qqh_shape_v1/2018_tauid_medium/cmb/out_multidim.root
+    WORKSPACE=output/$datacard_output_dm/cmb/out_multidim_dm.root
+    echo "[INFO] Printing fit result for category $(basename $RESDIR)"
+    FILE=output/$datacard_output_dm/cmb/postfitshape.root
+    FITFILE=output/$datacard_output_dm/cmb/fitDiagnostics.${ERA}.root
+    combine \
+        -n .$ERA \
+        -M FitDiagnostics \
+        -m 125 -d $WORKSPACE \
+        --robustFit 1 -v1 \
+        --robustHesse 1 \
+        --X-rtd MINIMIZER_analytic \
+        --cminDefaultMinimizerStrategy 0
+    mv fitDiagnostics.2018.root $FITFILE
+    echo "[INFO] Building Prefit/Postfit shapes"
+    PostFitShapesFromWorkspace -w ${WORKSPACE} \
+        -m 125 -d output/$datacard_output_dm/cmb/combined.txt.cmb \
         -o ${FILE} \
         -f ${FITFILE}:fit_s --postfit
 
@@ -420,6 +525,39 @@ if [[ $MODE == "PLOT-MULTIPOSTFIT" ]]; then
         python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb_${TAG}_multifit/${WP}
         python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb_${TAG}_multifit/${WP} --prefit
         python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb_${TAG}_multifit/${WP}
+    done
+    exit 0
+fi
+
+
+if [[ $MODE == "PLOT-MULTIPOSTFIT_DM" ]]; then
+    source utils/setup_root.sh
+
+    fit_categories=("DM0" "DM1" "DM10_11")
+
+
+
+    for RESDIR in "${fit_categories[@]}" 
+      do
+        
+        WORKSPACE=output/$datacard_output_dm/cmb/out_multidim_dm.root
+
+
+        CATEGORY=$RESDIR
+        
+        FILE=output/$datacard_output_dm/cmb/postfitshape.root
+
+        FITFILE=output/$datacard_output_dm/cmb/fitDiagnostics.${ERA}.root
+
+        # create output folder if it does not exist
+        if [ ! -d "output/postfitplots_muemb_${TAG}_multifit/" ]; then
+            mkdir -p output/postfitplots_muemb_${TAG}_multifit/${WP}
+        fi
+        echo "[INFO] Postfits plots for category $CATEGORY"
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb_${TAG}_multifit/${WP} --prefit
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb_${TAG}_multifit/${WP}
+        # python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb_${TAG}_multifit/${WP} --prefit
+        # python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb_${TAG}_multifit/${WP}
     done
     exit 0
 fi
@@ -469,6 +607,50 @@ if [[ $MODE == "IMPACTS" ]]; then
     rm higgsCombine*.root
 
     mv tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts_multifit.json impacts_output/${ERA}/${CHANNEL}/${WP}/${TAG}
+
+
+    exit 0
+fi
+
+
+if [[ $MODE == "IMPACTS_DM" ]]; then
+    source utils/setup_cmssw.sh
+
+    if [ ! -d "impacts_output/${ERA}/${CHANNEL}/${WP}/${TAG}" ]; then
+        mkdir -p impacts_output/${ERA}/${CHANNEL}/${WP}/${TAG}
+    fi
+
+    WORKSPACE=output/$datacard_output_dm/cmb/out_multidim_dm.root
+
+    fit_categories=("DM_0" "DM_1" "DM_10_11")
+
+
+
+    combineTool.py -M Impacts -d $WORKSPACE -m 125 \
+                --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
+                --doInitialFit --robustFit 1 \
+                --parallel 16
+
+    combineTool.py -M Impacts -d $WORKSPACE -m 125 \
+                --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
+                --robustFit 1 --doFits \
+                --parallel 16
+
+    combineTool.py -M Impacts -d $WORKSPACE -m 125 -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts_multifit_dm.json
+
+    for dm_cat in "${fit_categories[@]}"
+      do
+    
+        plotImpacts.py -i tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts_multifit_dm.json -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts_multifit_EMB_$dm_cat --POI r_EMB_$dm_cat  
+    
+        mv tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts_multifit_EMB_$dm_cat.pdf impacts_output/${ERA}/${CHANNEL}/${WP}/${TAG}
+    
+    done
+    #  --pullDef unconstPullAsym
+    # cleanup the fit files
+    rm higgsCombine*.root
+
+    mv tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts_multifit_dm.json impacts_output/${ERA}/${CHANNEL}/${WP}/${TAG}
 
 
     exit 0
