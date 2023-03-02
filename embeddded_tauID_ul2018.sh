@@ -309,21 +309,44 @@ fi
 
 if [[ $MODE == "IMPACTS" ]]; then
     source utils/setup_cmssw.sh
-    WORKSPACE=output/$datacard_output/htt_mt_Inclusive/workspace.root
-    combineTool.py -M Impacts -d $WORKSPACE -m 125 \
-                --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
-                --doInitialFit --robustFit 1 \
-                --parallel 16
 
-    combineTool.py -M Impacts -d $WORKSPACE -m 125 \
-                --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
-                --robustFit 1 --doFits \
-                --parallel 16
+    if [ ! -d "impacts_output/${ERA}/${CHANNEL}/${WP}/${TAG}" ]; then
+        mkdir -p impacts_output/${ERA}/${CHANNEL}/${WP}/${TAG}
+    fi
 
-    combineTool.py -M Impacts -d $WORKSPACE -m 125 -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts.json
-    plotImpacts.py -i tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts.json -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_impacts
-    # cleanup the fit files
-    rm higgsCombine*.root
+
+    pt_categories=("Pt20to25" "Pt25to30" "Pt30to35" "Pt35to40" "PtGt40")
+
+
+    
+
+    for pt_cat in "${pt_categories[@]}"
+    do
+
+        WORKSPACE=output/$datacard_output/htt_mt_${pt_cat}/workspace.root
+        
+        combineTool.py -M Impacts -d $WORKSPACE -m 125 \
+                    --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
+                    --doInitialFit --robustFit 1 \
+                    --parallel 16
+
+        combineTool.py -M Impacts -d $WORKSPACE -m 125 \
+                    --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
+                    --robustFit 1 --doFits \
+                    --parallel 16
+
+
+
+        combineTool.py -M Impacts -d $WORKSPACE -m 125 -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_${pt_cat}_impacts.json
+        plotImpacts.py -i tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_${pt_cat}_impacts.json -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_${pt_cat}_impacts
+        # cleanup the fit files
+
+        mv tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_${pt_cat}_impacts* impacts_output/${ERA}/${CHANNEL}/${WP}/${TAG}
+
+        rm higgsCombine*.root
+
+    done 
+    
     exit 0
 fi
 

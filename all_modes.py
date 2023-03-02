@@ -4,9 +4,10 @@ import argparse
 pre_shape_modes = ["CONTROL", "CONTROLREGION", "CONDOR"]
 
 post_shape_modes = ["MERGE", "SYNC", "DATACARD", "FIT",
-"POSTFIT", "PLOT-POSTFIT", "PLOT-SF", "JSON"
+"POSTFIT", "PLOT-POSTFIT", "PLOT-SF", "JSON", "IMPACTS"
 ]
 
+post_shape_modes = ["IMPACTS"]
 
 # CHANNEL=" mt "
 # ERA=" 2018 "
