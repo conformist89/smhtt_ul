@@ -328,11 +328,15 @@ if [[ $MODE == "IMPACTS" ]]; then
         combineTool.py -M Impacts -d $WORKSPACE -m 125 \
                     --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
                     --doInitialFit --robustFit 1 \
+                    --setParameterRanges r=0.7,1.3 \
+                    --setParameters r=1.00 \
                     --parallel 16
 
         combineTool.py -M Impacts -d $WORKSPACE -m 125 \
                     --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
                     --robustFit 1 --doFits \
+                    --setParameterRanges r=0.7,1.3 \
+                    --setParameters r=1.00 \
                     --parallel 16
 
 
