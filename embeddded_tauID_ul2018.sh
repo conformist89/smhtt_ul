@@ -300,8 +300,8 @@ if [[ $MODE == "PLOT-POSTFIT" ]]; then
     exit 0
 fi
 if [[ $MODE == "PLOT-SF" ]]; then
-    # source utils/setup_root.sh
-    source /work/olavoryk/source_files/setup-centOS7-gcc10.sh
+    source utils/setup_root.sh
+    # source /work/olavoryk/source_files/setup-centOS7-gcc10.sh
     echo python3 plotting/plot_TauID_sf.py --input output/$datacard_output/ --output output/postfitplots_muemb_${TAG} --wp ${WP}
     python3 plotting/plot_TauID_sf.py --input output/$datacard_output/ --output output/postfitplots_muemb_${TAG} --wp ${WP}
     exit 0
