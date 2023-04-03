@@ -4,6 +4,9 @@ ERA=$2
 NTUPLETAG=$3
 TAG=$4
 MODE=$5
+WP=$6
+VS_ELE_WP=$7
+DEEP_TAU=$8
 
 VARIABLES="m_vis"
 POSTFIX="-ML"
@@ -11,7 +14,6 @@ ulimit -s unlimited
 source utils/setup_ul_samples.sh $NTUPLETAG $ERA
 
 # Datacard Setup
-WP="tight"
 datacard_output="datacards/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
 
 output_shapes="tauid_shapes-${WP}-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}"
@@ -99,7 +101,9 @@ if [[ $MODE == "CONTROL" ]]; then
     python shapes/produce_shapes.py --channels $CHANNEL \
         --directory $NTUPLES \
         --${CHANNEL}-friend-directory $FRIENDS \
-        --era $ERA --num-processes 2 --num-threads 8 \
+        --era $ERA --num-processes 3 --num-threads 8 \
+         --wp $WP \
+         --vs_ele_wp ${VS_ELE_WP} \
         --optimization-level 1 --skip-systematic-variations \
         --special-analysis "TauID" \
         --control-plot-set ${VARIABLES} \
@@ -111,7 +115,9 @@ if [[ $MODE == "LOCAL" ]]; then
     python shapes/produce_shapes.py --channels $CHANNEL \
         --directory $NTUPLES \
         --${CHANNEL}-friend-directory $FRIENDS \
-        --era $ERA --num-processes 4 --num-threads 12 \
+        --era $ERA --num-processes 2 --num-threads 12 \
+         --wp $WP \
+         --vs_ele_wp ${VS_ELE_WP} \
         --optimization-level 1 \
         --special-analysis "TauID" \
         --control-plot-set ${VARIABLES} \
@@ -123,7 +129,9 @@ if [[ $MODE == "CONTROLREGION" ]]; then
     python shapes/produce_shapes.py --channels mm \
         --directory $NTUPLES \
         --mm-friend-directory $XSEC_FRIENDS \
-        --era $ERA --num-processes 3 --num-threads 8 \
+        --era $ERA --num-processes 3 --num-threads 9 \
+         --wp $WP \
+         --vs_ele_wp ${VS_ELE_WP} \
         --optimization-level 1 --skip-systematic-variations \
         --special-analysis "TauID" \
         --output-file "${shapes_output}_mm"
@@ -135,7 +143,7 @@ if [[ $MODE == "CONDOR" ]]; then
     echo "[INFO] Running on Condor"
     echo "[INFO] Condor output folder: ${CONDOR_OUTPUT}"
     bash submit/submit_shape_production_ul.sh $ERA $CHANNEL \
-        "singlegraph" $TAG 0 $NTUPLETAG $CONDOR_OUTPUT "TauID"
+        "singlegraph" $TAG 0 $NTUPLETAG $CONDOR_OUTPUT "TauID" $WP $VS_ELE_WP
     echo "[INFO] Jobs submitted"
 fi
 if [[ $MODE == "MERGE" ]]; then
@@ -280,46 +288,74 @@ if [[ $MODE == "PLOT-POSTFIT" ]]; then
         FILE=${RESDIR}/postfitshape.root
         FITFILE=${RESDIR}/fitDiagnostics.${ERA}.root
         # create output folder if it does not exist
-        if [ ! -d "output/postfitplots_muemb/" ]; then
-            mkdir -p output/postfitplots_muemb/${WP}
+        if [ ! -d "output/postfitplots_muemb_${TAG}/" ]; then
+            mkdir -p output/postfitplots_muemb_${TAG}/${WP}
         fi
         echo "[INFO] Postfits plots for category $CATEGORY"
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb/${WP} --prefit
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb/${WP}
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb/${WP} --prefit
-        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb/${WP}
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb_${TAG}/${WP} --prefit
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel ${CHANNEL} --embedding --single-category $CATEGORY --categories "None" -o output/postfitplots_muemb_${TAG}/${WP}
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb_${TAG}/${WP} --prefit
+        python3 plotting/plot_shapes_tauID_postfit.py -l --era ${ERA} --input ${FILE} --channel mm --embedding --single-category 100 --categories "None" -o output/postfitplots_muemb_${TAG}/${WP}
     done
     exit 0
 fi
 if [[ $MODE == "PLOT-SF" ]]; then
     source utils/setup_root.sh
-    echo python3 plotting/plot_TauID_sf.py --input output/$datacard_output/ --output output/postfitplots_muemb/ --wp ${WP}
-    python3 plotting/plot_TauID_sf.py --input output/$datacard_output/ --output output/postfitplots_muemb/ --wp ${WP}
+    # source /work/olavoryk/source_files/setup-centOS7-gcc10.sh
+    echo python3 plotting/plot_TauID_sf.py --input output/$datacard_output/ --output output/postfitplots_muemb_${TAG} --wp ${WP}
+    python3 plotting/plot_TauID_sf.py --input output/$datacard_output/ --output output/postfitplots_muemb_${TAG} --wp ${WP}
     exit 0
 fi
 
 if [[ $MODE == "IMPACTS" ]]; then
     source utils/setup_cmssw.sh
-    WORKSPACE=output/$datacard_output/htt_mt_Inclusive/workspace.root
-    combineTool.py -M Impacts -d $WORKSPACE -m 125 \
-                --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
-                --doInitialFit --robustFit 1 \
-                --parallel 16
 
-    combineTool.py -M Impacts -d $WORKSPACE -m 125 \
-                --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
-                --robustFit 1 --doFits \
-                --parallel 16
+    if [ ! -d "impacts_output/${ERA}/${CHANNEL}/${WP}/${TAG}" ]; then
+        mkdir -p impacts_output/${ERA}/${CHANNEL}/${WP}/${TAG}
+    fi
 
-    combineTool.py -M Impacts -d $WORKSPACE -m 125 -o tauid_${WP}_impacts.json
-    plotImpacts.py -i tauid_${WP}_impacts.json -o tauid_${WP}_impacts
-    # cleanup the fit files
-    rm higgsCombine*.root
+
+    pt_categories=("Pt20to25" "Pt25to30" "Pt30to35" "Pt35to40" "PtGt40")
+
+
+    
+
+    for pt_cat in "${pt_categories[@]}"
+    do
+
+        WORKSPACE=output/$datacard_output/htt_mt_${pt_cat}/workspace.root
+        
+        combineTool.py -M Impacts -d $WORKSPACE -m 125 \
+                    --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
+                    --doInitialFit --robustFit 1 \
+                    --setParameterRanges r=0.7,1.3 \
+                    --setParameters r=1.00 \
+                    --parallel 16
+
+        combineTool.py -M Impacts -d $WORKSPACE -m 125 \
+                    --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy 0 \
+                    --robustFit 1 --doFits \
+                    --setParameterRanges r=0.7,1.3 \
+                    --setParameters r=1.00 \
+                    --parallel 16
+
+
+
+        combineTool.py -M Impacts -d $WORKSPACE -m 125 -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_${pt_cat}_impacts.json
+        plotImpacts.py -i tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_${pt_cat}_impacts.json -o tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_${pt_cat}_impacts
+        # cleanup the fit files
+
+        mv tauid_${ERA}_${CHANNEL}_${WP}_${TAG}_${pt_cat}_impacts* impacts_output/${ERA}/${CHANNEL}/${WP}/${TAG}
+
+        rm higgsCombine*.root
+
+    done 
+    
     exit 0
 fi
 
 if [[ $MODE == "JSON" ]]; then
     source utils/setup_root.sh
-    python3 friends/create_xpog_json.py  --input output/$datacard_output/
+    python3 friends/create_xpog_json.py  --wp $WP --user_out_tag $TAG --era $ERA --channel $CHANNEL --input output/$datacard_output/ 
     exit 0
 fi
