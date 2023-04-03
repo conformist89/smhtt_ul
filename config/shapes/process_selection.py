@@ -161,6 +161,17 @@ def lumi_weight(era):
 
 
 def MC_base_process_selection(channel, era, wp):
+    wps_ele_dict = {
+
+        "vvtight" : "VVTight",
+        "vtight" : "VVTight",
+        "tight" : "Tight",
+        "medium" : "Medium",
+        "loose" : "Loose",
+        "vloose" : "VLoose",
+        "vvloose" : "VVLoose",
+        "vvvloose" : "VVVLoose",
+    }
     if channel == "em":
         isoweight = ("iso_wgt_ele_1 * iso_wgt_ele_2", "isoweight")
         idweight = ("id_wgt_ele_1 * id_wgt_ele_2", "idweight")
@@ -179,49 +190,11 @@ def MC_base_process_selection(channel, era, wp):
     elif channel == "mt":
         isoweight = ("iso_wgt_mu_1", "isoweight")
         idweight = ("id_wgt_mu_1", "idweight")
-        if wp == "vvtight":
-            tauidweight = (
-                "((gen_match_2==5)*id_wgt_tau_vsJet_VVTight_2 + (gen_match_2!=5))",
+        tauidweight = (
+                f"((gen_match_2==5)*id_wgt_tau_vsJet_{wps_ele_dict[wp]}_2 + (gen_match_2!=5))",
                 "taubyIsoIdWeight",
             )
-        if wp == "vtight":
-            tauidweight = (
-                "((gen_match_2==5)*id_wgt_tau_vsJet_VTight_2 + (gen_match_2!=5))",
-                "taubyIsoIdWeight",
-            )
-
-        if wp == "tight":
-            tauidweight = (
-                "((gen_match_2==5)*id_wgt_tau_vsJet_Tight_2 + (gen_match_2!=5))",
-                "taubyIsoIdWeight",
-            )
-
-        if wp == "medium":
-            tauidweight = (
-                "((gen_match_2==5)*id_wgt_tau_vsJet_Medium_2 + (gen_match_2!=5))",
-                "taubyIsoIdWeight",
-            )
-
-        if wp == "loose":
-            tauidweight = (
-                "((gen_match_2==5)*id_wgt_tau_vsJet_Loose_2 + (gen_match_2!=5))",
-                "taubyIsoIdWeight",
-            )
-        if wp == "vloose":
-            tauidweight = (
-                "((gen_match_2==5)*id_wgt_tau_vsJet_VLoose_2 + (gen_match_2!=5))",
-                "taubyIsoIdWeight",
-            )
-        if wp == "vvloose":
-            tauidweight = (
-                "((gen_match_2==5)*id_wgt_tau_vsJet_VVLoose_2 + (gen_match_2!=5))",
-                "taubyIsoIdWeight",
-            )
-        if wp == "vvvloose":
-            tauidweight = (
-                "((gen_match_2==5)*id_wgt_tau_vsJet_VVVLoose_2 + (gen_match_2!=5))",
-                "taubyIsoIdWeight",
-            )
+ 
 
         vsmu_weight = ("id_wgt_tau_vsMu_Tight_2", "vsmuweight")
         trgweight = ("trg_wgt_single_mu24ormu27", "trgweight")
