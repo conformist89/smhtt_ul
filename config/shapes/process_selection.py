@@ -36,9 +36,9 @@ def lumi_weight(era):
 
 def prefiring_weight(era):
     if era in ["2016", "2017"]:
-        weight = ("prefiringweight", "prefireWeight")
+        weight = ("prefiring_wgt", "prefiring_wgt")
     else:
-        weight = ("1.0", "prefireWeight")
+        weight = ("1.0", "prefiring_wgt")
     return weight
 
 
