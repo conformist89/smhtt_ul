@@ -52,8 +52,8 @@ anti_iso_lt = ReplaceCutAndAddWeight(
     "anti_iso",
     "tau_iso",
     Cut("id_tau_vsJet_Tight_2<0.5&&id_tau_vsJet_VLoose_2>0.5", "tau_anti_iso"),
-    # Weight("1.0", "fake_factor"),
-    Weight("ff2_nom", "fake_factor"),
+    Weight("1.0", "fake_factor"),
+    # Weight("ff2_nom", "fake_factor"),
 )
 anti_iso_tt_mcl = ReplaceMultipleCutsAndAddWeight(
     "anti_iso",
@@ -828,12 +828,12 @@ for unc in [
 
 prefiring = [
     ReplaceWeight(
-        "CMS_prefiringUp", "prefireWeight", Weight("prefiringweightup", "prefireWeight")
+        "CMS_prefiringUp", "prefireWeight", Weight("prefiring_wgt__prefiringUp", "prefireWeight")
     ),
     ReplaceWeight(
         "CMS_prefiringDown",
         "prefireWeight",
-        Weight("prefiringweightdown", "prefireWeight"),
+        Weight("prefiring_wgt__prefiringDown", "prefireWeight"),
     ),
 ]
 
