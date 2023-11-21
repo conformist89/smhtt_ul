@@ -126,6 +126,13 @@ def channel_selection(channel, era, wp, vs_ele, special=None):
                         "trg_selection",
                     ),  # TODO add nonHPS Triggerflag for also MC
                 )
+            elif era in ["2016postVFP", "2016preVFP"]:
+                cuts.append(
+                    (
+                        "pt_2>20 && pt_1>=23 && ((trg_single_mu22 == 1) || (trg_single_mu22_tk == 1)  || (trg_single_mu22_eta2p1 == 1)  || (trg_single_mu22_tk_eta2p1 == 1))",
+                        "trg_selection",
+                    ),
+                )
             else:
                 raise ValueError("Given era does not exist")
             return Selection(name="mt", cuts=cuts)
@@ -308,6 +315,13 @@ def channel_selection(channel, era, wp, vs_ele, special=None):
                         "trg_selection",
                     ),
                 )
+            elif era in ["2016postVFP", "2016preVFP"]:
+                cuts.append(
+                    (
+                        "pt_2>20 && pt_1>=23 && ((trg_single_mu22 == 1) || (trg_single_mu22_tk == 1)  || (trg_single_mu22_eta2p1 == 1)  || (trg_single_mu22_tk_eta2p1 == 1))",
+                        "trg_selection",
+                    ),
+                )
             else:
                 raise ValueError("Given era does not exist")
             return Selection(name="mt", cuts=cuts)
@@ -322,6 +336,13 @@ def channel_selection(channel, era, wp, vs_ele, special=None):
                 cuts.append(
                     (
                         "pt_2>28 && pt_1>=28 && ((trg_single_mu27 == 1) || (trg_single_mu24 == 1))",
+                        "trg_selection",
+                    ),
+                )
+            elif era in ["2016postVFP", "2016preVFP"]:
+                cuts.append(
+                    (
+                        "pt_2>23 && pt_1>=23 && ((trg_single_mu22 == 1) || (trg_single_mu22_tk == 1)  || (trg_single_mu22_eta2p1 == 1)  || (trg_single_mu22_tk_eta2p1 == 1))",
                         "trg_selection",
                     ),
                 )
