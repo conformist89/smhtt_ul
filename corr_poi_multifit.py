@@ -8,10 +8,26 @@ import matplotlib.pyplot as plt
 ROOT.PyConfig.IgnoreCommandLineOptions = True  # disable ROOT internal argument parser
 ROOT.gStyle.SetPaintTextFormat(".2f")
 import sys
+import argparse
+
+
+parser = argparse.ArgumentParser(description="Plot the tau ID SF")
+parser.add_argument(
+    "--era", type=str, default="2016postVFP", help="2016preVFP, 2016postVFP, 2017, 2018"
+)
+args = parser.parse_args()
+
 
 ROOT.gROOT.SetBatch()
 
-
+if args.era == "2016preVFP":
+    lumi_label = "19.5"  # "36.326450080"
+elif args.era == "2016postVFP":
+    lumi_label = "16.8"
+elif args.era == "2017":
+    lumi_label = "41.529"
+elif args.era == "2018":
+    lumi_label = "59.74"
 
 def SetTDRStyle():
     """Sets the PubComm recommended style
@@ -153,6 +169,11 @@ if __name__ == "__main__":
         "r_EMB_Pt30to35" : "EMB_Pt30to35", 
         "r_EMB_Pt35to40" : "EMB_Pt35to40", 
         "r_EMB_PtGt40"   : "EMB_PtGt40",
+
+        "r_EMB_DM_0" : "EMB_DM_0", 
+        "r_EMB_DM_1" : "EMB_DM_1", 
+        "r_EMB_DM_10_11" : "EMB_DM_10_11", 
+
     }
     label_list = [
          "EMB_Pt20to25",
@@ -160,6 +181,10 @@ if __name__ == "__main__":
          "EMB_Pt30to35",
          "EMB_Pt35to40",
          "EMB_PtGt40",
+
+         "EMB_DM_0",
+         "EMB_DM_1",
+         "EMB_DM_10_11",
     ]
 
     era = sys.argv[1]
@@ -212,7 +237,7 @@ if __name__ == "__main__":
     tex.SetTextSize(25)
     tex.SetTextFont(43)
     tex.DrawLatex(0.30, 0.955, "CMS")
-    tex.DrawLatex(0.65, 0.955, "59.8 fb^{-1} (13 TeV)")
+    tex.DrawLatex(0.65, 0.955, lumi_label +" fb^{-1}"+ " (13 TeV)")
     tex.SetTextFont(53)
     tex.DrawLatex(0.40, 0.955, "Internal")
     for i in range(num_pois):
@@ -234,4 +259,5 @@ if __name__ == "__main__":
     c.Update()
 
     # c.SaveAs("{}_plot_poi_correlation_stage-0.pdf".format(era))
-    c.SaveAs("{}_plot_poi_correlation_Medium_Vs_Jet_Medium_Vs_Ele.png".format(era))
+    c.SaveAs("{}_DM_POIS_correlations_Tight_vsJet_SSOS_disentangled.pdf".format(era))
+

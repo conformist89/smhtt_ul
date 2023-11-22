@@ -5,9 +5,17 @@ import ROOT
 import numpy as np
 from array import array
 import matplotlib.pyplot as plt
-ROOT.PyConfig.IgnoreCommandLineOptions = True  # disable ROOT internal argument parser
+# ROOT.PyConfig.IgnoreCommandLineOptions = True  # disable ROOT internal argument parser
 ROOT.gStyle.SetPaintTextFormat(".2f")
 import sys
+import argparse
+
+
+parser = argparse.ArgumentParser(description="Plot the tau ID SF")
+parser.add_argument(
+    "--era", type=str, default="2016postVFP", help="2016preVFP, 2016postVFP, 2017, 2018"
+)
+args = parser.parse_args()
 
 ROOT.gROOT.SetBatch()
 
@@ -153,6 +161,9 @@ if __name__ == "__main__":
         "r_EMB_Pt30to35" : "EMB_Pt30to35", 
         "r_EMB_Pt35to40" : "EMB_Pt35to40", 
         "r_EMB_PtGt40"   : "EMB_PtGt40",
+        "r_EMB_Inclusive" : "EMB_Inclusive",
+
+
     }
     label_list = [
          "EMB_Pt20to25",
@@ -160,6 +171,8 @@ if __name__ == "__main__":
          "EMB_Pt30to35",
          "EMB_Pt35to40",
          "EMB_PtGt40",
+         "EMB_Inclusive"
+
     ]
 
     era = sys.argv[1]
@@ -171,6 +184,7 @@ if __name__ == "__main__":
     if f == None:
         raise Exception("[ERROR] File {} not found.".format(filename))
 
+    # result = f.Get("fit_s")
     result = f.Get("fit_s")
     if result == None:
         raise Exception("[ERROR] Failed to load fit_s from file {}.".format(filename))
@@ -178,13 +192,25 @@ if __name__ == "__main__":
     params = result.floatParsInit()
     # pois = ["CMS_htt_doublemutrg_Run2018", "CMS_eff_m_trail", "CMS_eff_emb_m_trail", "CMS_eff_trigger_emb_mt_Run2018", "CMS_eff_emb_m", "CMS_eff_m",
     # "CMS_eff_mc_m", "CMS_eff_mc_m_trail"]
-    pois = ["CMS_htt_doublemutrg_Run2018",  "CMS_eff_trigger_emb_mt_Run2018", "CMS_eff_emb_m", "CMS_eff_m",
-    "CMS_eff_mc_m", ]
+    # pois = ["CMS_eff_m_emb_muon1", "CMS_eff_m_emb_muon2","CMS_eff_m_mc_muon1", "CMS_eff_m_mc_muon2",  
+    #         "CMS_ExtrapSSOS_mm_Run2016", "CMS_eff_trigger_emb_mt_Run2016", "CMS_htt_doublemutrg_Run2016", 
+    #         "CMS_htt_tjXsec", "CMS_htt_vvXsec", "CMS_htt_wjXsec", "lumi_13TeV_1718",
+    #         "lumi_13TeV_Run2016", "lumi_13TeV_correlated", "prop_binhtt_mm_100_Run2016_bin0"]
+
+    pois = [
+        "CMS_eff_m_emb_muon1", "CMS_eff_m_emb_muon2","CMS_eff_m_mc_muon1", "CMS_eff_m_mc_muon2",  
+             "CMS_eff_trigger_emb_mt_Run2016", "CMS_htt_doublemutrg_Run2016",
+            # "CMS_htt_tjXsec", "CMS_htt_vvXsec", "CMS_htt_wjXsec", 
+            #  "lumi_13TeV_Run2016", "lumi_13TeV_correlated",
+              "r_EMB_Inclusive"
+             ]
+
+    # pois = []
     # for i in range(params.getSize()):
     #     name = params[i].GetName()
     #     if not name.startswith("r") and not name.startswith("prop"):
     #         pois.append(name)
-    print("[INFO] Identified POIs with names {}.".format(pois))
+    # print("[INFO] Identified POIs with names {}.".format(pois))
 
 
     num_pois = len(pois)
@@ -207,7 +233,7 @@ if __name__ == "__main__":
     c = ROOT.TCanvas("c", "c", 600, 600)
     c.SetGrid(1)
     m.SetContour(10000)
-    m.Draw("colz")
+    m.Draw("colz text")
 
     tex = ROOT.TLatex()
     tex.SetNDC()
@@ -217,7 +243,7 @@ if __name__ == "__main__":
     tex.SetTextSize(25)
     tex.SetTextFont(43)
     tex.DrawLatex(0.30, 0.955, "CMS")
-    tex.DrawLatex(0.65, 0.955, "59.8 fb^{-1} (13 TeV)")
+    tex.DrawLatex(0.65, 0.955, lumi_label +" fb^{-1}"+ " (13 TeV)")
     tex.SetTextFont(53)
     tex.DrawLatex(0.40, 0.955, "Internal")
     for i in range(num_pois):
@@ -241,4 +267,4 @@ if __name__ == "__main__":
     c.Update()
 
     # c.SaveAs("{}_plot_poi_correlation_stage-0.pdf".format(era))
-    c.SaveAs("{}_trigger_NP_not_splitted.png".format(era))
+    c.SaveAs("{}_muon_id_mm_cr_nps_correlations_incl_v1.pdf".format(era))
