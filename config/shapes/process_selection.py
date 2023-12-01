@@ -495,7 +495,7 @@ def ZTT_embedded_process_selection(channel, era):
         )
         if era == "2018":
             ztt_embedded_weights.append(
-                ("trg_wgtsingle_mu24Ormu27", "trgweight")
+                ("trg_wgt_single_mu24ormu27", "trgweight")
             )
         elif era == "2016postVFP" or era == "2016preVFP":
             ztt_embedded_weights.append(
@@ -555,7 +555,7 @@ def ZTT_embedded_process_selection(channel, era):
                 # TODO trigger weights for em
                 ("iso_wgt_mu_1 * iso_wgt_mu_2", "isoweight"),
                 ("id_wgt_mu_1 * id_wgt_mu_2", "idweight"),
-                # ("trg_wgtsingle_mu24Ormu27", "trgweight"),
+                # ("trg_wgtsingle_mu24ormu27", "trgweight"),
                 # triggerweight_emb(channel, era),
             ]
         )
@@ -565,7 +565,7 @@ def ZTT_embedded_process_selection(channel, era):
             )
         elif era == "2018":
             ztt_embedded_weights.append(
-                ("trg_wgtsingle_mu24Ormu27", "trgweight")
+                ("trg_wgt_single_mu24ormu27", "trgweight")
             )
         ztt_embedded_cuts = [
             (
