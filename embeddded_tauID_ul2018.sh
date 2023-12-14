@@ -19,11 +19,11 @@ source utils/setup_ul_samples.sh $NTUPLETAG $ERA
 
 # Datacard Setup
 
-datacard_output="datacards_pt_m1_m2/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
+datacard_output="datacards_pt_id_es_005_v1/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
 
-datacard_output_dm="datacards_dm_m1_m2/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
+datacard_output_dm="datacards_dm_id_es_18_brommer_thesis_shapeU/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
 
-datacard_output_incl="datacards_incl_m1_m2/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
+datacard_output_incl="datacards_incl_id_es_005_v1/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
 
 output_shapes="tauid_shapes-${WP}-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}"
 CONDOR_OUTPUT=output/condor_shapes/${WP}-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}
@@ -83,7 +83,7 @@ if [[ $MODE == "XSEC" ]]; then
     echo "##############################################################################################"
     echo "#      Checking xsec friends directory                                                       #"
     echo "##############################################################################################"
-    python3 friends/build_friend_tree.py --basepath $KINGMAKER_BASEDIR_XROOTD --outputpath root://cmsxrootd-kit.gridka.de/$XSEC_FRIENDS --nthreads 20
+    python3 friends/build_friend_tree.py --basepath $KINGMAKER_BASEDIR_XROOTD --outputpath root://cmsxrootd-kit-disk.gridka.de/$XSEC_FRIENDS --nthreads 20
     exit 0
 fi
 
@@ -108,7 +108,7 @@ if [[ $MODE == "CONTROL" ]]; then
     python shapes/produce_shapes.py --channels $CHANNEL \
         --directory $NTUPLES \
         --${CHANNEL}-friend-directory $XSEC_FRIENDS \
-        --era $ERA --num-processes 3 --num-threads 8 \
+        --era $ERA --num-processes 3 --num-threads 9 \
          --wp $WP \
          --vs_ele_wp ${VS_ELE_WP} \
         --optimization-level 1 --skip-systematic-variations \
@@ -653,7 +653,7 @@ fi
 if [[ $MODE == "IMPACTS" ]]; then
     source utils/setup_cmssw.sh
 
-    IMPACT_PATH=impacts_m1_m2
+    IMPACT_PATH=impacts_id_es
 
     if [ ! -d "${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}" ]; then
         mkdir -p "${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}"
@@ -699,8 +699,7 @@ fi
 if [[ $MODE == "IMPACTS_DM" ]]; then
     source utils/setup_cmssw.sh
 
-    IMPACT_PATH=impacts_m1_m2
-
+    IMPACT_PATH=impacts_dm_id_es_18_brommer_thesis_shapeU
     if [ ! -d "${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}" ]; then
         mkdir -p ${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}
     fi
@@ -746,7 +745,7 @@ fi
 if [[ $MODE == "IMPACTS_INCL" ]]; then
     source utils/setup_cmssw.sh
 
-    IMPACT_PATH=impacts_m1_m2
+    IMPACT_PATH=impacts_id_es
 
     if [ ! -d "${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}" ]; then
         mkdir -p ${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}
