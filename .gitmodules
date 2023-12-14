@@ -8,6 +8,4 @@
 	path = fake-factor-application
 	url = git@github.com:KIT-CMS/fake-factor-application
 	branch = new_ff_uncertainties
-[submodule "datasets"]
-	path = KingMaker_sample_database
-	url = https://github.com/KIT-CMS/KingMaker_sample_database
+
