@@ -211,20 +211,17 @@ def add_tauES_datasets(
                 for sel_obj in new_selections:
                     for cut in sel_obj.cuts:
                         # now find the intersection between quants and the expression set
-                        for quant in quants & get_quantities_from_expression(
-                            cut.expression
-                        ):
-                            cut.expression = cut.expression.replace(
-                                quant,
-                                "{quant}__{var}".format(quant=quant, var=shiftname),
-                            )
+                        for quant in quants & get_quantities_from_expression(cut.expression):
+                            cut.expression = re.sub(
+                                rf"\b({quant})\b",
+                                f"{quant}__{shiftname}",
+                                cut.expression,
+                        )
                             logger.debug(
                                 f"Replaced {quant} in {cut.expression} ( quant: {quant}, var: {shiftname})"
                             )
                     for weight in sel_obj.weights:
-                        for quant in quants & get_quantities_from_expression(
-                            weight.expression
-                        ):
+                        for quant in quants & get_quantities_from_expression(weight.expression):
                             weight.expression = weight.expression.replace(
                                 quant,
                                 "{quant}__{var}".format(quant=quant, var=shiftname),
@@ -236,7 +233,9 @@ def add_tauES_datasets(
                     for quant in quants & get_quantities_from_expression(act.variable):
                         act.variable = act.variable.replace(
                             quant,
-                            "{quant}__{var}".format(quant=act.variable, var=shiftname),
+                            "{quant}__{var}".format(
+                                quant=act.variable, var=shiftname
+                            ),
                         )
                         logger.debug(
                             f"Replaced action {quant} with {act.variable} ( quant: {quant}, var: {shiftname})"
@@ -248,16 +247,18 @@ def add_tauES_datasets(
 def book_tauES_histograms(
     manager, additional_emb_procS, datasets, variations, enable_check=False
 ):
+   
     def replace_expression(exp, quants):
-        for quant in quants[shiftname]:
-            if quant in exp:
-                exp = exp.replace(
-                    quant,
-                    "{quant}__{var}".format(quant=quant, var=shiftname),
-                )
-                logger.debug(
-                    f"Replaced {quant} in {exp} ( quant: {quant}, var: {shiftname}"
-                )
+        quant_string = set(quants[shiftname])
+        for quant in quant_string & get_quantities_from_expression(exp):
+                exp = re.sub(
+                rf"\b({exp})\b",
+                f"{quant}__{shiftname}",
+                exp
+    )
+        logger.debug(
+            f"Replaced {quant} in {exp} ( quant: {quant}, var: {shiftname}"
+        )
         return exp
 
     for tau_es_shift in additional_emb_procS:
