@@ -19,11 +19,13 @@ source utils/setup_ul_samples.sh $NTUPLETAG $ERA
 
 # Datacard Setup
 
-datacard_output="datacards_pt_id_es_005_v1/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
+datacard_output="datacards_test_pt_v3/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
 
-datacard_output_dm="datacards_dm_id_es_18_brommer_thesis_shapeU/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
+datacard_output_dm="datacards_dm_test_v3/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
 
-datacard_output_incl="datacards_incl_id_es_005_v1/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
+datacard_output_incl="datacards_incl_test_v3/${NTUPLETAG}-${TAG}/${ERA}_tauid_${WP}"
+
+impact_path="impacts_test_v3"
 
 output_shapes="tauid_shapes-${WP}-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}"
 CONDOR_OUTPUT=output/condor_shapes/${WP}-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}
@@ -653,7 +655,7 @@ fi
 if [[ $MODE == "IMPACTS" ]]; then
     source utils/setup_cmssw.sh
 
-    IMPACT_PATH=impacts_id_es
+    IMPACT_PATH=${impact_path}
 
     if [ ! -d "${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}" ]; then
         mkdir -p "${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}"
@@ -699,7 +701,7 @@ fi
 if [[ $MODE == "IMPACTS_DM" ]]; then
     source utils/setup_cmssw.sh
 
-    IMPACT_PATH=impacts_dm_id_es_18_brommer_thesis_shapeU
+    IMPACT_PATH=${impact_path}
     if [ ! -d "${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}" ]; then
         mkdir -p ${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}
     fi
@@ -745,7 +747,7 @@ fi
 if [[ $MODE == "IMPACTS_INCL" ]]; then
     source utils/setup_cmssw.sh
 
-    IMPACT_PATH=impacts_id_es
+    IMPACT_PATH=${impact_path}
 
     if [ ! -d "${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}" ]; then
         mkdir -p ${IMPACT_PATH}/${ERA}/${CHANNEL}/${WP}/${TAG}
