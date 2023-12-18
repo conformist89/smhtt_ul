@@ -787,24 +787,27 @@ def main(args):
                 categorization,
                 special_analysis,
             )
-        if special_analysis == "TauES":
-            additional_emb_procS = set()
-            tauESvariations = [-1.2 + 0.05 * i for i in range(0, 47)]
-            add_tauES_datasets(
-                era,
-                channel,
-                friend_directories,
-                files,
-                args.directory,
-                nominals,
-                tauESvariations,
-                [
-                    channel_selection(channel, era, wp, vs_ele_wp, special_analysis),
-                    ZTT_embedded_process_selection(channel, era),
-                ],
-                categorization,
-                additional_emb_procS,
-            )
+        if special_analysis == "TauES" or special_analysis == "TauID":
+            if channel == "mt":
+                additional_emb_procS = set()
+                tauESvariations = [-2.5 + 0.1 * i for i in range(0, 51)]
+                add_tauES_datasets(
+                    era,
+                    channel,
+                    friend_directories,
+                    files,
+                    args.directory,
+                    nominals,
+                    tauESvariations,
+                    [
+                        channel_selection(channel, era, wp, vs_ele_wp, special_analysis),
+                        ZTT_embedded_process_selection(channel, era),
+                    ],
+                    categorization,
+                    additional_emb_procS,
+                    xrootd=args.xrootd,
+                    validation_tag=args.validation_tag
+                )
 
     if args.process_selection is None:
         procS = {
@@ -879,14 +882,21 @@ def main(args):
             datasets=nominals[era]["units"][channel],
             enable_check=do_check,
         )
-        if channel == "mt" and special_analysis == "TauES":
+        if channel == "mt" and (special_analysis == "TauES" or special_analysis == "TauID"):
             logger.info("Booking TauES")
             book_tauES_histograms(
                 um,
                 additional_emb_procS,
                 nominals[era]["units"][channel],
-                [same_sign, anti_iso_lt],
+                [],
                 do_check,
+            )
+            book_histograms(
+                um,
+                processes=embS,
+                datasets=nominals[era]["units"][channel],
+                variations=[same_sign, anti_iso_lt],
+                enable_check=do_check,
             )
         elif channel == "mm":
             book_histograms(
@@ -897,14 +907,7 @@ def main(args):
                 enable_check=do_check,
             )
 
-        else:
-            book_histograms(
-                um,
-                processes=embS,
-                datasets=nominals[era]["units"][channel],
-                variations=[same_sign, anti_iso_lt],
-                enable_check=do_check,
-            )
+        # else:
         if channel in ["mt", "et"]:
             book_histograms(
                 um,
@@ -1052,18 +1055,18 @@ def main(args):
             )
             # Book variations common to multiple channels.
             if channel in ["et", "mt", "tt"]:
-                book_histograms(
-                    um,
-                    processes=(trueTauBkgS | leptonFakesS | signalsS) - {"zl"},
-                    datasets=nominals[era]["units"][channel],
-                    variations=[
-                        tau_es_3prong,
-                        tau_es_3prong1pizero,
-                        tau_es_1prong,
-                        tau_es_1prong1pizero,
-                    ],
-                    enable_check=do_check,
-                )
+                # book_histograms(
+                #     um,
+                #     processes=(trueTauBkgS | leptonFakesS | signalsS) - {"zl"},
+                #     datasets=nominals[era]["units"][channel],
+                #     variations=[
+                #         tau_es_3prong,
+                #         tau_es_3prong1pizero,
+                #         tau_es_1prong,
+                #         tau_es_1prong1pizero,
+                #     ],
+                #     enable_check=do_check,
+                # )
                 book_histograms(
                     um,
                     processes=jetFakesDS[channel],
@@ -1073,22 +1076,22 @@ def main(args):
                     ],
                     enable_check=do_check,
                 )
-                book_histograms(
-                    um,
-                    processes=embS,
-                    datasets=nominals[era]["units"][channel],
-                    variations=[
-                        emb_tau_es_3prong,
-                        emb_tau_es_3prong1pizero,
-                        emb_tau_es_1prong,
-                        emb_tau_es_1prong1pizero,
-                        tau_es_3prong,
-                        tau_es_3prong1pizero,
-                        tau_es_1prong,
-                        tau_es_1prong1pizero,
-                    ],
-                    enable_check=do_check,
-                )
+                # book_histograms(
+                #     um,
+                #     processes=embS,
+                #     datasets=nominals[era]["units"][channel],
+                #     variations=[
+                #         emb_tau_es_3prong,
+                #         emb_tau_es_3prong1pizero,
+                #         emb_tau_es_1prong,
+                #         emb_tau_es_1prong1pizero,
+                #         tau_es_3prong,
+                #         tau_es_3prong1pizero,
+                #         tau_es_1prong,
+                #         tau_es_1prong1pizero,
+                #     ],
+                #     enable_check=do_check,
+                # )
             if channel in ["et", "mt"]:
                 book_histograms(
                     um,
@@ -1316,5 +1319,5 @@ if __name__ == "__main__":
         log_file = args.output_file.replace(".root", ".log")
     else:
         log_file = "{}.log".format(args.output_file)
-    setup_logging(log_file, logging.INFO)
+    setup_logging(log_file, logging.DEBUG)
     main(args)
