@@ -319,6 +319,11 @@ def parse_arguments():
         type=str,
         help="Tag to be used for the validation of the input samples",
     )
+    parser.add_argument(
+        "--es",
+        action="store_true",
+        help="Add tau ES variations.",
+    )
     return parser.parse_args()
 
 
@@ -787,7 +792,7 @@ def main(args):
                 categorization,
                 special_analysis,
             )
-        if special_analysis == "TauES" or special_analysis == "TauID":
+        if args.es and  special_analysis == "TauID":
             if channel == "mt":
                 additional_emb_procS = set()
                 tauESvariations = [-2.5 + 0.1 * i for i in range(0, 51)]
@@ -882,7 +887,7 @@ def main(args):
             datasets=nominals[era]["units"][channel],
             enable_check=do_check,
         )
-        if channel == "mt" and (special_analysis == "TauES" or special_analysis == "TauID"):
+        if channel == "mt" and args.es and special_analysis == "TauID":
             logger.info("Booking TauES")
             book_tauES_histograms(
                 um,
