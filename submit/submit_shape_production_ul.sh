@@ -12,6 +12,7 @@ WP=$9
 VS_ELE_WP=${10}
 
 
+
 [[ ! -z $1 && ! -z $2 && ! -z $3 && ! -z $4 && ! -z $5 ]] || (
     echo "[ERROR] Number of given parameters is too small."
     exit 1
@@ -67,7 +68,7 @@ elif [[ "$SUBMIT_MODE" == "singlegraph" ]]; then
             --only-create-graphs \
             --graph-dir $OUTPUT \
             $CONTROL_ARG \
-            --xrootd
+            --xrootd --es
     elif [[ "$SPECIAL" == "TauES" ]]; then
         python shapes/produce_shapes.py --channels $CHANNEL \
             --output-file dummy.root \
@@ -82,7 +83,7 @@ elif [[ "$SUBMIT_MODE" == "singlegraph" ]]; then
             --only-create-graphs \
             --graph-dir $OUTPUT \
             $CONTROL_ARG \
-            --xrootd
+            --xrootd --es
     else
         python shapes/produce_shapes.py --channels $CHANNEL \
             --output-file dummy.root \
@@ -96,7 +97,7 @@ elif [[ "$SUBMIT_MODE" == "singlegraph" ]]; then
             --only-create-graphs \
             --graph-dir $OUTPUT \
             $CONTROL_ARG \
-            --xrootd
+            --xrootd --es
     fi
     # Set output graph file name produced during graph creation.
     GRAPH_FILE_FULL_NAME=${OUTPUT}/analysis_unit_graphs-${ERA}-${CHANNEL}-${PROCESSES}.pkl
