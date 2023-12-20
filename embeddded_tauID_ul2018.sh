@@ -12,7 +12,7 @@ DEEP_TAU=$8
 echo $NTUPLETAG
 echo $WP
 
-VARIABLES="m_vis"
+VARIABLES="pt_2"
 POSTFIX="-ML"
 ulimit -s unlimited
 source utils/setup_ul_samples.sh $NTUPLETAG $ERA
@@ -47,8 +47,18 @@ echo "FRIENDS: ${FRIENDS}"
 echo "XSEC: ${XSEC_FRIENDS}"
 
 categories=("Pt20to25" "Pt25to30" "Pt30to35" "PtGt40" "DM0" "DM1" "DM10_11" "Inclusive")
+dm_categories=("DM0" "DM1" "DM10_11")
+# dm_categories=("DM0")
 printf -v categories_string '%s,' "${categories[@]}"
 echo "Using Cateogires ${categories_string%,}"
+
+es_shifts=("embminus2p5" "embminus2p4" "embminus2p3" "embminus2p2" "embminus2p1" "embminus2p0" "embminus1p9" "embminus1p8" "embminus1p7" "embminus1p6" "embminus1p5" "embminus1p4" "embminus1p3"\
+ "embminus1p2" "embminus1p1" "embminus1p0" "embminus0p9" "embminus0p8" "embminus0p7" "embminus0p6" "embminus0p5" "embminus0p4" "embminus0p3" "embminus0p2" "embminus0p1" "emb0p0" "emb0p1"\
+  "emb0p2" "emb0p3" "emb0p4" "emb0p5" "emb0p6" "emb0p7" "emb0p8" "emb0p9" "emb1p0" "emb1p1" "emb1p2" "emb1p3" "emb1p4" "emb1p5" "emb1p6"\
+   "emb1p7" "emb1p8" "emb1p9" "emb2p0" "emb2p1" "emb2p2" "emb2p3" "emb2p4" "emb2p5")
+
+# es_shifts=("embminus2p5" "embminus2p4" "embminus2p3")
+
 
 if [[ $MODE == "COPY" ]]; then
     source utils/setup_root.sh
@@ -116,7 +126,7 @@ if [[ $MODE == "CONTROL" ]]; then
         --optimization-level 1 --skip-systematic-variations \
         --special-analysis "TauID" \
         --control-plot-set ${VARIABLES} \
-        --output-file $shapes_output  --xrootd
+        --output-file $shapes_output  --xrootd --es
 fi
 
 PROCESSES="ttt,ttl,ttj"
@@ -134,7 +144,7 @@ if [[ $MODE == "LOCAL" ]]; then
          --process-selection $PROCESSES \
         --control-plot-set ${VARIABLES} \
         --optimization-level 1 \
-        --output-file $shapes_output$number --xrootd
+        --output-file $shapes_output$number --xrootd 
 fi
 
 if [[ $MODE == "CONTROLREGION" ]]; then
@@ -147,7 +157,7 @@ if [[ $MODE == "CONTROLREGION" ]]; then
          --vs_ele_wp ${VS_ELE_WP} \
         --optimization-level 1 --skip-systematic-variations \
         --special-analysis "TauID" \
-        --output-file "${shapes_output}_mm"  --xrootd
+        --output-file "${shapes_output}_mm"  --xrootd --es
 fi
 
 
@@ -165,6 +175,25 @@ if [[ $MODE == "MERGE" ]]; then
     echo "[INFO] Merging outputs located in ${CONDOR_OUTPUT}"
     hadd -j 5 -n 600 -f $shapes_rootfile ${CONDOR_OUTPUT}/../analysis_unit_graphs-${ERA}-${CHANNEL}-${NTUPLETAG}-${TAG}/*.root
 fi
+
+
+if [[ $MODE == "PLOT-CONTROL" ]]; then
+    source utils/setup_root.sh
+    echo "##############################################################################################"
+    echo "#     plotting                                      #"
+    echo "##############################################################################################"
+    bash ./shapes/do_estimations.sh 2016 ${shapes_rootfile} 1
+
+        for CATEGORY in "${dm_categories[@]}"
+    do
+        for es_sh in "${es_shifts[@]}"
+        do 
+            python3 plotting/plot_shapes_control_es_shifts.py -l --era Run${ERA} --input ${shapes_rootfile} \
+            --variables ${VARIABLES} --channels ${CHANNEL} --embedding --category $CATEGORY --energy_scale --es_shift $es_sh
+        done
+    done
+fi
+
 
 
 if [[ "${ERA}" == "2018"  ||  "${ERA}" == "2017" ]]; then 
