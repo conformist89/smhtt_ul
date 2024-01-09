@@ -659,7 +659,7 @@ def get_control_units(channel, era, wp,vs_ele_wp, datasets, special_analysis):
         name="vvl",
         dataset=datasets["VV"],
         selections=[
-            channel_selection(channel, era,wp, special_analysis),
+            channel_selection(channel, era, wp, vs_ele_wp, special_analysis),
             VV_process_selection(channel, era, wp),
             VVL_process_selection(channel),
         ],
