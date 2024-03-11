@@ -12,7 +12,7 @@ DEEP_TAU=$8
 echo $NTUPLETAG
 echo $WP
 
-VARIABLES="pt_2"
+VARIABLES="m_vis"
 POSTFIX="-ML"
 ulimit -s unlimited
 source utils/setup_ul_samples.sh $NTUPLETAG $ERA

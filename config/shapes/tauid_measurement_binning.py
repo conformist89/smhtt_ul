@@ -4,6 +4,8 @@ from ntuple_processor import Histogram
 
 discriminator_variable = "m_vis"
 discriminator_binning = np.arange(30, 130, 5)
+# discriminator_variable = "pt_2"
+# discriminator_binning = np.arange(23, 200, 5)
 discriminator_binning_enlarged = np.arange(30, 160, 5)
 
 
